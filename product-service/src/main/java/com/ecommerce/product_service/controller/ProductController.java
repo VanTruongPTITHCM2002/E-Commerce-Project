@@ -28,6 +28,15 @@ public class ProductController {
         return ResponseEntity.ok().body(ResponseUtil.success(200,"Get successful data products",products));
     }
 
+    @GetMapping("/{productId}")
+    public ResponseEntity<ApiResponse<Product>> getProductById(@PathVariable("productId") String productId){
+        Product product = this.productService.getProductById(productId);
+        if(product == null){
+           return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseUtil.error(404,"Not found product",null));
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtil.success(200,"Found product successfully",product));
+    }
+
     @PostMapping()
     public ResponseEntity<ApiResponse<Product>> insertProduct(@RequestBody ProductDto productDto){
         Product product = productService.insertProduct(productDto);

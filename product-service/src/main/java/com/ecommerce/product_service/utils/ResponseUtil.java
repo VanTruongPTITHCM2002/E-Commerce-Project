@@ -10,4 +10,12 @@ public class ResponseUtil {
         apiResponse.setData(data);
         return apiResponse;
     }
+
+    public static <T> ApiResponse<T> error (int statusCode, String message, T data){
+        ApiResponse<T> apiResponse = new ApiResponse<>();
+        apiResponse.setStatus(statusCode);
+        apiResponse.setMessage(message);
+        apiResponse.setData(data);
+        return apiResponse;
+    }
 }

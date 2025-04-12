@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -33,5 +34,10 @@ public class ProductServiceImpl implements ProductService {
         product.setQuantity(productDto.getQuantity());
         productRepository.save(product);
         return product;
+    }
+
+    @Override
+    public Product getProductById(String productId) {
+        return this.productRepository.findById(UUID.fromString(productId)).orElse(null);
     }
 }
