@@ -1,6 +1,6 @@
 package com.ecommerce.product_service.utils;
 
-import com.ecommerce.product_service.response.ApiResponse;
+import com.ecommerce.product_service.dto.response.ApiResponse;
 
 public class ResponseUtil {
     public static <T> ApiResponse<T> success(int statusCode, String message, T data){

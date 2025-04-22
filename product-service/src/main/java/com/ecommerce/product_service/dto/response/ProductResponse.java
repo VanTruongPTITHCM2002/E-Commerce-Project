@@ -1,8 +1,10 @@
-package com.ecommerce.product_service.dto;
+package com.ecommerce.product_service.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -10,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ProductDto {
+public class ProductResponse {
     String name;
     int price;
     int quantity;

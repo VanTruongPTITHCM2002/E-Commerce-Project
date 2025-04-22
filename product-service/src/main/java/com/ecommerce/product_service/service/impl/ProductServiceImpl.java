@@ -1,7 +1,9 @@
 package com.ecommerce.product_service.service.impl;
 
-import com.ecommerce.product_service.dto.ProductDto;
+import com.ecommerce.product_service.dto.request.ProductRequest;
+import com.ecommerce.product_service.dto.response.ProductResponse;
 import com.ecommerce.product_service.entity.Product;
+import com.ecommerce.product_service.mapper.ProductMapper;
 import com.ecommerce.product_service.repository.ProductRepository;
 import com.ecommerce.product_service.service.ProductService;
 import lombok.AccessLevel;
@@ -20,18 +22,20 @@ import java.util.UUID;
 public class ProductServiceImpl implements ProductService {
 
     ProductRepository productRepository;
+    ProductMapper productMapper;
 
     @Override
-    public List<Product> getProducts() {
-        return productRepository.findAll();
+    public List<ProductResponse> getProducts() {
+        return productRepository.findAll().stream()
+                .map(productMapper::toProductResponse).toList();
     }
 
     @Override
-    public Product insertProduct(ProductDto productDto) {
+    public Product insertProduct(ProductRequest productRequest) {
         Product product = new Product();
-        product.setName(productDto.getName());
-        product.setPrice(productDto.getPrice());
-        product.setQuantity(productDto.getQuantity());
+        product.setName(productRequest.getName());
+        product.setPrice(productRequest.getPrice());
+        product.setQuantity(productRequest.getQuantity());
         productRepository.save(product);
         return product;
     }
@@ -39,5 +43,27 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product getProductById(String productId) {
         return this.productRepository.findById(UUID.fromString(productId)).orElse(null);
+    }
+
+    @Override
+    public ProductResponse updateProduct(String productId, ProductRequest productRequest) {
+        Product product = this.productRepository.findById(UUID.fromString(productId)).orElse(null);
+        if(product == null){
+            return null;
+        }
+        productMapper.updateProduct(product,productRequest);
+        this.productRepository.save(product);
+        return productMapper.toProductResponse(product);
+    }
+
+    @Override
+    public boolean deleteProduct(String productId) {
+        Product product = this.productRepository.findById(UUID.fromString(productId)).orElse(null);
+        if(product == null){
+            return false;
+        }
+
+        this.productRepository.delete(product);
+        return true;
     }
 }
