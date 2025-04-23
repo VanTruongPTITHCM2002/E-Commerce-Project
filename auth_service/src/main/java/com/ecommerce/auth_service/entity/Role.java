@@ -40,5 +40,5 @@ public class Role {
     LocalDateTime updateAt;
 
     @OneToMany(mappedBy = "role",cascade = CascadeType.ALL,orphanRemoval = true)
-    List<User> user;
+    List<User> users;
 }

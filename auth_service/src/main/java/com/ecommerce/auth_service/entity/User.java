@@ -9,7 +9,7 @@ import org.hibernate.annotations.DynamicUpdate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -44,7 +44,7 @@ public class User {
     @Column(name = "registerat")
     LocalDateTime registeredAt;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL,optional = false)
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
     @JoinColumn(name = "roleFK",referencedColumnName = "roleId",nullable = false)
     Role role;
 }
