@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true,level = AccessLevel.PRIVATE)
-public class AutheServiceImpl implements IAuthService {
+public class AuthServiceImpl implements IAuthService {
 
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;
@@ -21,7 +21,9 @@ public class AutheServiceImpl implements IAuthService {
     @Override
     public boolean loginPage(AuthRequest authRequest) {
         User user = this.userRepository.findByUsername(authRequest.getUsername()).orElse(null);
-
+        if(user == null){
+            return false;
+        }
         return passwordEncoder.matches(authRequest.getPassword(), user.getPassword());
     }
 }
