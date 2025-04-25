@@ -1,14 +1,24 @@
 package com.ecommerce.auth_service.service.impl;
 
 import com.ecommerce.auth_service.dto.request.AuthRequest;
+import com.ecommerce.auth_service.dto.response.AuthResponse;
 import com.ecommerce.auth_service.entity.User;
 import com.ecommerce.auth_service.repository.UserRepository;
 import com.ecommerce.auth_service.service.IAuthService;
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -18,12 +28,39 @@ public class AuthServiceImpl implements IAuthService {
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;
 
+    @NonFinal
+    @Value("${jwt.secret_key}")
+    private String SECRET_KEY;
+
     @Override
-    public boolean loginPage(AuthRequest authRequest) {
-        User user = this.userRepository.findByUsername(authRequest.getUsername()).orElse(null);
-        if(user == null){
-            return false;
+    public AuthResponse loginPage(AuthRequest authRequest) throws JOSEException {
+        User user = this.userRepository.findByUsername(authRequest.getUsername()).orElseThrow(() -> new RuntimeException("User not existed"));
+        boolean isMatch = passwordEncoder.matches(authRequest.getPassword(), user.getPassword());
+        if(!isMatch){
+            throw new RuntimeException("Password is incorrect");
         }
-        return passwordEncoder.matches(authRequest.getPassword(), user.getPassword());
+        String token = generateToken(user);
+        return AuthResponse.builder()
+                .token(token)
+                .isAuthenticated(true)
+                .build();
+    }
+
+    private String generateToken(User user) throws JOSEException {
+
+        JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
+
+        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                .subject(user.getUsername())
+                .issuer("vantruong.com")
+                .issueTime(new Date())
+                .expirationTime(new Date(Instant.now().plus(1,ChronoUnit.HOURS).toEpochMilli()))
+                .build();
+
+        Payload payload = new Payload(jwtClaimsSet.toJSONObject());
+
+        JWSObject jwsObject = new JWSObject(jwsHeader,payload);
+        jwsObject.sign(new MACSigner(SECRET_KEY.getBytes()));
+        return jwsObject.serialize();
     }
 }

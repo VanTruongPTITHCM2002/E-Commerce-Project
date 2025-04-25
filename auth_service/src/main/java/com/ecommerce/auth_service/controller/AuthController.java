@@ -2,8 +2,10 @@ package com.ecommerce.auth_service.controller;
 
 import com.ecommerce.auth_service.dto.request.AuthRequest;
 import com.ecommerce.auth_service.dto.response.ApiResponse;
+import com.ecommerce.auth_service.dto.response.AuthResponse;
 import com.ecommerce.auth_service.entity.User;
 import com.ecommerce.auth_service.service.IAuthService;
+import com.nimbusds.jose.JOSEException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -38,14 +40,15 @@ public class AuthController {
                     content = @Content(mediaType = "application/json")),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Username or password incorrect")
     })
-    public ResponseEntity<ApiResponse<Boolean>> loginPage (@RequestBody @Valid AuthRequest authRequest){
-        boolean isAuthorize = this.iAuthService.loginPage(authRequest);
-        return ResponseEntity.status(isAuthorize ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(
-                ApiResponse.<Boolean>builder()
-                        .status(isAuthorize  ? HttpStatus.OK.value() : HttpStatus.BAD_REQUEST.value())
-                        .message(isAuthorize ? "Sign in success": "Username or password incorrect")
+    public ResponseEntity<ApiResponse<AuthResponse>> loginPage (@RequestBody @Valid AuthRequest authRequest) throws JOSEException {
+        AuthResponse authResponse = this.iAuthService.loginPage(authRequest);
+        return ResponseEntity.ok().body(
+                ApiResponse.<AuthResponse>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Login success")
+                        .data(authResponse)
                         .build()
-        );
 
+        );
     }
 }
