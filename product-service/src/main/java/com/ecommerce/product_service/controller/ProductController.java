@@ -9,6 +9,9 @@ import com.ecommerce.product_service.utils.ResponseUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,10 +28,14 @@ public class ProductController {
 
     ProductService productService;
 
-    @GetMapping()
-    public ResponseEntity<ApiResponse<List<ProductResponse>>>getProducts(){
-        List<ProductResponse> productResponses = productService.getProducts();
-        return ResponseEntity.ok().body(ResponseUtil.success(200,"Get successful data products",productResponses));
+    @GetMapping
+    public ResponseEntity<ApiResponse<Page<ProductResponse>>>getProducts(
+            @RequestParam(name = "size", defaultValue = "5") int size,
+            @RequestParam(name = "page", defaultValue = "0") int page
+    ){
+        Pageable pageable = PageRequest.of(page,size); // in frontend must be page + 1;
+        Page<ProductResponse> productResponsePage = this.productService.getProducts(pageable);
+        return ResponseEntity.ok().body(ResponseUtil.success(200,"Get successful data products",productResponsePage));
     }
 
     @GetMapping("/{productId}")
@@ -40,7 +47,7 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(ResponseUtil.success(200,"Found product successfully",product));
     }
 
-    @PostMapping()
+    @PostMapping
     public ResponseEntity<ApiResponse<Product>> insertProduct(@RequestBody ProductRequest productRequest){
         Product product = productService.insertProduct(productRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(ResponseUtil.success(201,"Insert product successfully",product));

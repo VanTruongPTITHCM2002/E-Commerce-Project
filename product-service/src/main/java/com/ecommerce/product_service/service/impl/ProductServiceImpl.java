@@ -10,9 +10,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -25,9 +26,9 @@ public class ProductServiceImpl implements ProductService {
     ProductMapper productMapper;
 
     @Override
-    public List<ProductResponse> getProducts() {
-        return productRepository.findAll().stream()
-                .map(productMapper::toProductResponse).toList();
+    public Page<ProductResponse> getProducts(Pageable pageable) {
+        return productRepository.findAll(pageable)
+                .map(productMapper::toProductResponse);
     }
 
     @Override
