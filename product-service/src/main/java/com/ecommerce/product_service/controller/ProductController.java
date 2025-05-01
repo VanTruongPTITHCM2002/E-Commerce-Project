@@ -6,35 +6,40 @@ import com.ecommerce.product_service.entity.Product;
 import com.ecommerce.product_service.dto.response.ApiResponse;
 import com.ecommerce.product_service.service.ProductService;
 import com.ecommerce.product_service.utils.ResponseUtil;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true,level = AccessLevel.PRIVATE)
+@Slf4j
 public class ProductController {
 
     ProductService productService;
 
-    @GetMapping
+    @GetMapping()
     public ResponseEntity<ApiResponse<Page<ProductResponse>>>getProducts(
             @RequestParam(name = "size", defaultValue = "5") int size,
-            @RequestParam(name = "page", defaultValue = "0") int page
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "sorting", defaultValue = "name") String sorting
     ){
-        Pageable pageable = PageRequest.of(page,size); // in frontend must be page + 1;
+        Pageable pageable = PageRequest.of(page,size, Sort.by(sorting).descending()); // in frontend must be page + 1;
         Page<ProductResponse> productResponsePage = this.productService.getProducts(pageable);
+        log.info("Get products have page, size, sorting successfully");
         return ResponseEntity.ok().body(ResponseUtil.success(200,"Get successful data products",productResponsePage));
     }
 
@@ -47,8 +52,8 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(ResponseUtil.success(200,"Found product successfully",product));
     }
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<Product>> insertProduct(@RequestBody ProductRequest productRequest){
+    @PostMapping()
+    public ResponseEntity<ApiResponse<Product>> insertProduct(@RequestBody @Valid ProductRequest productRequest){
         Product product = productService.insertProduct(productRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(ResponseUtil.success(201,"Insert product successfully",product));
     }
@@ -64,6 +69,8 @@ public class ProductController {
         boolean isDeletedProduct = this.productService.deleteProduct(productId);
         Map<String,Boolean> map = new HashMap<>();
         map.put("isDelete",isDeletedProduct);
-        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtil.success(200,"Delete product successfully",map));
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtil.success(200,"Delete product" +
+                (isDeletedProduct ? "successfully" : "fail")
+                ,map));
     }
 }
