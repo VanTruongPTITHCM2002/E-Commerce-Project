@@ -8,6 +8,7 @@ import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "role")
@@ -24,7 +25,7 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int roleId;
 
-    @Column(name = "rolename",nullable = false)
+    @Column(name = "rolename",nullable = false, unique = true)
     String roleName;
 
     @Column(name = "description")
@@ -41,4 +42,7 @@ public class Role {
 
     @OneToMany(mappedBy = "role",cascade = CascadeType.ALL,orphanRemoval = true)
     List<User> users;
+
+    @ManyToMany
+    Set<Permission> permissions;
 }
