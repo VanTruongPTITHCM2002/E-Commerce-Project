@@ -33,11 +33,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product insertProduct(ProductRequest productRequest) {
-        Product product = new Product();
-        product.setName(productRequest.getName());
-        product.setPrice(productRequest.getPrice());
-        product.setQuantity(productRequest.getQuantity());
-        productRepository.save(product);
+        Product product = productMapper.toProduct(productRequest);
+        this.productRepository.save(product);
         return product;
     }
 
