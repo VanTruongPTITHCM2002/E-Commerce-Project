@@ -4,6 +4,7 @@ import com.ecommerce.auth_service.dto.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -31,5 +32,29 @@ public class GlobalHandleException {
                                 .data(map)
                                 .build()
                 );
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponse<String>> handleRuntimeException(RuntimeException runtimeException){
+        String error = runtimeException.getMessage();
+
+        return ResponseEntity.badRequest().body(
+                ApiResponse.<String>builder()
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .message(error)
+                        .build()
+        );
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ApiResponse<String>> handleAuthorizeDeniedException(AuthorizationDeniedException authorizationDeniedException){
+        String error = authorizationDeniedException.getMessage();
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                ApiResponse.<String>builder()
+                        .status(HttpStatus.FORBIDDEN.value())
+                        .message(error)
+                        .build()
+        );
     }
 }

@@ -15,10 +15,12 @@ import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.StringJoiner;
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +57,7 @@ public class AuthServiceImpl implements IAuthService {
                 .issuer("vantruong.com")
                 .issueTime(new Date())
                 .expirationTime(new Date(Instant.now().plus(1,ChronoUnit.HOURS).toEpochMilli()))
+                .claim("scope",buildScope(user))
                 .build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
@@ -62,5 +65,18 @@ public class AuthServiceImpl implements IAuthService {
         JWSObject jwsObject = new JWSObject(jwsHeader,payload);
         jwsObject.sign(new MACSigner(SECRET_KEY.getBytes()));
         return jwsObject.serialize();
+    }
+
+    private String buildScope (User user){
+        StringJoiner stringJoiner = new StringJoiner(" ");
+        if(!user.getRole().getUsers().isEmpty()){
+            stringJoiner.add("ROLE_" + user.getRole().getRoleName());
+
+            if(!user.getRole().getPermissions().isEmpty()){
+                user.getRole().getPermissions().forEach(permission -> stringJoiner.add(permission.getPermissionName()));
+            }
+        }
+
+        return stringJoiner.toString();
     }
 }
