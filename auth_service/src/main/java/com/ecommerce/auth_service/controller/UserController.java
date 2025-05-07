@@ -1,6 +1,8 @@
 package com.ecommerce.auth_service.controller;
 
 
+
+import com.ecommerce.auth_service.constants.RoleConstants;
 import com.ecommerce.auth_service.dto.request.UserRequest;
 import com.ecommerce.auth_service.dto.response.ApiResponse;
 import com.ecommerce.auth_service.dto.response.UserResponse;
@@ -10,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,10 +23,11 @@ import java.util.List;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE,makeFinal = true)
 public class UserController {
+
     IUserService iUserService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize(RoleConstants.ADMIN)
     public ResponseEntity<ApiResponse<List<UserResponse>>> getUsers (){
         List<UserResponse> responses = this.iUserService.getUsers();
         return ResponseEntity.ok()
@@ -37,9 +41,9 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
+    @PostAuthorize(RoleConstants.ADMIN + " || returnObject.body.data.username == authentication.name")
     public ResponseEntity<ApiResponse<UserResponse>> getUser (@PathVariable int userId){
         UserResponse userResponse = this.iUserService.getUser(userId);
-
         return ResponseEntity.ok().body(
                 ApiResponse.<UserResponse>builder()
                         .status(HttpStatus.OK.value())
@@ -75,7 +79,6 @@ public class UserController {
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponse<Boolean>> deleteUser (@PathVariable int userId){
         boolean isDeletedUser = this.iUserService.deleteUser(userId);
-
         return ResponseEntity.ok().body(
                 ApiResponse.<Boolean>builder()
                         .status(HttpStatus.OK.value())

@@ -75,9 +75,7 @@ public class UserServiceImpl implements IUserService {
         User user = this.userRepository.findById(userId).orElseThrow(
                 () -> new RuntimeException("User not found")
         );
-
         this.userRepository.delete(user);
-
         return true;
     }
 }
