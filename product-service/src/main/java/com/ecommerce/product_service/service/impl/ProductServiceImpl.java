@@ -40,7 +40,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product getProductById(String productId) {
-        return this.productRepository.findById(UUID.fromString(productId)).orElse(null);
+        return this.productRepository.findById(UUID.fromString(productId)).
+                orElseThrow(
+                        () -> new RuntimeException("Product not found")
+                );
     }
 
     @Override
@@ -56,11 +59,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public boolean deleteProduct(String productId) {
-        Product product = this.productRepository.findById(UUID.fromString(productId)).orElse(null);
-        if(product == null){
-            return false;
-        }
-
+        Product product = this.productRepository.findById(UUID.fromString(productId))
+                .orElseThrow(
+                        () -> new RuntimeException("Product not found")
+                );
         this.productRepository.delete(product);
         return true;
     }

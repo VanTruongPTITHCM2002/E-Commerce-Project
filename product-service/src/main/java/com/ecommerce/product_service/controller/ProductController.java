@@ -17,6 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -46,31 +48,30 @@ public class ProductController {
     @GetMapping("/{productId}")
     public ResponseEntity<ApiResponse<Product>> getProductById(@PathVariable("productId") String productId){
         Product product = this.productService.getProductById(productId);
-        if(product == null){
-           return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseUtil.error(404,"Not found product",null));
-        }
         return ResponseEntity.status(HttpStatus.OK).body(ResponseUtil.success(200,"Found product successfully",product));
     }
 
-    @PostMapping()
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Product>> insertProduct(@RequestBody @Valid ProductRequest productRequest){
         Product product = productService.insertProduct(productRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(ResponseUtil.success(201,"Insert product successfully",product));
     }
 
     @PutMapping("/{productId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public  ResponseEntity<ApiResponse<ProductResponse>> updateProduct (@PathVariable String productId, @RequestBody ProductRequest productRequest){
         ProductResponse productResponse = this.productService.updateProduct(productId,productRequest);
         return ResponseEntity.status(HttpStatus.OK).body(ResponseUtil.success(200,"Update product successfully",productResponse));
     }
 
     @DeleteMapping("/{productId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public  ResponseEntity<ApiResponse<Map<String,Boolean>>> deleteProduct (@PathVariable String productId){
         boolean isDeletedProduct = this.productService.deleteProduct(productId);
         Map<String,Boolean> map = new HashMap<>();
         map.put("isDelete",isDeletedProduct);
-        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtil.success(200,"Delete product" +
-                (isDeletedProduct ? "successfully" : "fail")
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtil.success(200,"Delete product successfully"
                 ,map));
     }
 }
