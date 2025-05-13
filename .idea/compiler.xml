@@ -10,6 +10,16 @@
         <module name="api-gateway" />
         <module name="discovery-server" />
       </profile>
+      <profile name="Annotation profile for order_service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        </processorPath>
+        <module name="order_service" />
+      </profile>
       <profile name="Annotation profile for payment_service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
@@ -17,10 +27,9 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
-        <module name="cart_service" />
-        <module name="order_service" />
         <module name="payment_service" />
         <module name="notification_service" />
+        <module name="cart_service" />
       </profile>
       <profile name="Annotation profile for product-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />

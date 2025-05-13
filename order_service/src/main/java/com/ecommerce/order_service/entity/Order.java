@@ -1,14 +1,16 @@
 package com.ecommerce.order_service.entity;
 
+import com.ecommerce.order_service.Enum.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
-@Table(name = "order")
+@Table(name = "orders")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -19,6 +21,7 @@ public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_id")
     int orderId;
 
     @Column(name = "userId", nullable = false)
@@ -31,9 +34,11 @@ public class Order {
     LocalDate updateAt;
 
     @Enumerated(EnumType.STRING)
-    String status;
+    OrderStatus status;
 
     @Column(name = "total_price")
     BigDecimal totalPrice;
 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    List<OrderItem> orderItemList;
 }
