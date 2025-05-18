@@ -5,6 +5,7 @@ import com.ecommerce.order_service.dto.request.OrderRequest;
 import com.ecommerce.order_service.dto.response.ApiResponse;
 import com.ecommerce.order_service.dto.response.OrderResponse;
 import com.ecommerce.order_service.service.IOrderService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/orders")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -27,7 +28,7 @@ public class OrderController {
 
     IOrderService iOrderService;
 
-    @GetMapping
+    @GetMapping("/orders")
     public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrders(
             @RequestParam (name = "size", defaultValue = "5") int size,
             @RequestParam (name = "page", defaultValue = "0") int page,
@@ -44,13 +45,37 @@ public class OrderController {
         );
     }
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<OrderResponse>> addOrder (@RequestBody OrderRequest orderRequest){
+    @GetMapping("/{userId}/orders")
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrdersByUserId (@PathVariable String userId){
+        List<OrderResponse> responses = this.iOrderService.getOrdersByUserId(userId);
+        return ResponseEntity.ok().body(
+                ApiResponse.<List<OrderResponse>>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Get orders of " + userId + " successfully")
+                        .data(responses)
+                        .build()
+        );
+    }
+
+    @PostMapping("/orders")
+    public ResponseEntity<ApiResponse<OrderResponse>> addOrder (@RequestBody @Valid OrderRequest orderRequest){
         OrderResponse orderResponse = this.iOrderService.addOrder(orderRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 ApiResponse.<OrderResponse>builder()
                         .status(HttpStatus.CREATED.value())
                         .message("Created order successfully")
+                        .data(orderResponse)
+                        .build()
+        );
+    }
+
+    @PutMapping("/orders/{orderId}")
+    public ResponseEntity<ApiResponse<OrderResponse>> updateOrder (@PathVariable int orderId,@RequestBody @Valid OrderRequest orderRequest){
+        OrderResponse orderResponse = this.iOrderService.updateOrder(orderId,orderRequest);
+        return ResponseEntity.ok().body(
+                ApiResponse.<OrderResponse>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Updated order successfully")
                         .data(orderResponse)
                         .build()
         );

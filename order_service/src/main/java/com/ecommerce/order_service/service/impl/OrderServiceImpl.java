@@ -27,19 +27,25 @@ public class OrderServiceImpl implements IOrderService {
 
     @Override
     public List<OrderResponse> getOrders(Pageable pageable) {
-        return this.orderRepository.findAll().stream().map(
+        return this.orderRepository.findAll(pageable).stream().map(
                 orderMapper::toResponse
         ).toList();
     }
 
     @Override
     public OrderResponse getOrderById(int orderId) {
-        return null;
+        Order order = this.orderRepository.findById(orderId).orElseThrow(
+                () -> new RuntimeException("Order not found")
+        );
+        return orderMapper.toResponse(order);
     }
 
     @Override
-    public List<OrderResponse> getOrdersByUserId(int userId) {
-        return List.of();
+    public List<OrderResponse> getOrdersByUserId(String userId) {
+        return this.orderRepository.findByUserId(userId)
+                .stream()
+                .map(orderMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -50,9 +56,11 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     @Override
-    public OrderResponse updateOrder(OrderRequest orderRequest) {
-        Order order = this.orderMapper.toEntity(orderRequest);
-        order = this.orderRepository.save(order);
+    public OrderResponse updateOrder(int orderId, OrderRequest orderRequest) {
+        Order order = this.orderRepository.findById(orderId).orElseThrow(
+                () -> new RuntimeException("Order not found")
+        );
+        orderMapper.toUpdate(order,orderRequest);
         return orderMapper.toResponse(order);
     }
 

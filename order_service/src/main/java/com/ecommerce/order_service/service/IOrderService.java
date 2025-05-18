@@ -9,8 +9,8 @@ import java.util.List;
 public interface IOrderService {
     List<OrderResponse> getOrders (Pageable pageable);
     OrderResponse getOrderById (int orderId);
-    List<OrderResponse> getOrdersByUserId (int userId);
+    List<OrderResponse> getOrdersByUserId (String userId);
     OrderResponse addOrder (OrderRequest orderRequest);
-    OrderResponse updateOrder (OrderRequest orderRequest);
+    OrderResponse updateOrder (int orderId,OrderRequest orderRequest);
     boolean deleteOrder (int orderId);
 }
