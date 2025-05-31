@@ -56,6 +56,7 @@ public class UserServiceImpl implements IUserService {
     public List<UserResponse> getUsers() {
         return this.userRepository.findAll()
                 .stream()
+                .filter(User::getStatus)
                 .map(userMapper::toUserResponse).toList();
     }
 
@@ -75,7 +76,8 @@ public class UserServiceImpl implements IUserService {
         User user = this.userRepository.findById(userId).orElseThrow(
                 () -> new RuntimeException("User not found")
         );
-        this.userRepository.delete(user);
+        user.setStatus(false);
+        this.userRepository.save(user);
         return true;
     }
 }

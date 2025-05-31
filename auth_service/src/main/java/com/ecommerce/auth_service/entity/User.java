@@ -45,6 +45,9 @@ public class User {
     @Column(name = "registerat")
     LocalDateTime registeredAt;
 
+    @Column(name = "status")
+    Boolean status;
+
     @ManyToOne(fetch = FetchType.LAZY,optional = false)
     @JoinColumn(name = "roleFK",referencedColumnName = "roleId",nullable = false)
     Role role;

@@ -23,4 +23,5 @@ public class UserRequest {
     String email;
     LocalDateTime registeredAt;
     String role;
+    boolean status;
 }
