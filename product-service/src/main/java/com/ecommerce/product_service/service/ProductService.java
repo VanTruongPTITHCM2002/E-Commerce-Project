@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 public interface ProductService {
     Page<ProductResponse> getProducts(Pageable pageable);
     Product insertProduct(ProductRequest productDto);
-    Product getProductById(String productId);
+    ProductResponse getProductById(String productId);
     ProductResponse updateProduct(String productId, ProductRequest productRequest);
     boolean deleteProduct(String productId);
  }

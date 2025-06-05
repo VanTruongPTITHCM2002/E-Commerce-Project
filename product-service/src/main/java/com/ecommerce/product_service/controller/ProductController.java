@@ -46,9 +46,9 @@ public class ProductController {
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<ApiResponse<Product>> getProductById(@PathVariable("productId") String productId){
-        Product product = this.productService.getProductById(productId);
-        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtil.success(200,"Found product successfully",product));
+    public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@PathVariable("productId") String productId){
+        ProductResponse productResponse = this.productService.getProductById(productId);
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtil.success(200,"Found product successfully",productResponse));
     }
 
     @PostMapping
