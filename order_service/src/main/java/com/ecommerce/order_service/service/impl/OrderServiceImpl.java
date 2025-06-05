@@ -1,9 +1,12 @@
 package com.ecommerce.order_service.service.impl;
 
+import com.ecommerce.order_service.Enum.OrderStatus;
 import com.ecommerce.order_service.dto.request.OrderRequest;
 import com.ecommerce.order_service.dto.response.OrderResponse;
 import com.ecommerce.order_service.entity.Order;
+import com.ecommerce.order_service.exception.AppException;
 import com.ecommerce.order_service.mapper.OrderMapper;
+import com.ecommerce.order_service.repository.OrderItemRepository;
 import com.ecommerce.order_service.repository.OrderRepository;
 import com.ecommerce.order_service.service.IOrderService;
 import lombok.AccessLevel;
@@ -11,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +27,7 @@ import java.util.List;
 public class OrderServiceImpl implements IOrderService {
 
     OrderRepository orderRepository;
+    OrderItemRepository orderItemRepository;
     OrderMapper orderMapper;
 
     @Override
@@ -35,7 +40,7 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     public OrderResponse getOrderById(int orderId) {
         Order order = this.orderRepository.findById(orderId).orElseThrow(
-                () -> new RuntimeException("Order not found")
+                () -> new AppException(HttpStatus.NOT_FOUND.value(), "Order not found")
         );
         return orderMapper.toResponse(order);
     }
@@ -66,6 +71,16 @@ public class OrderServiceImpl implements IOrderService {
 
     @Override
     public boolean deleteOrder(int orderId) {
-        return false;
+        Order order = this.orderRepository.findById(orderId).orElseThrow(
+                () -> new AppException(HttpStatus.NOT_FOUND.value(), "Order not found")
+        );
+        try{
+            order.setStatus(OrderStatus.CANCELLED);
+            this.orderRepository.save(order);
+            return true;
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return false;
+        }
     }
 }

@@ -21,11 +21,9 @@ public class OrderRequest {
     @NotEmpty(message = "userId must not empty")
     @NotNull (message = "userId must not null")
     String userId;
-
     LocalDate createAt;
-
     LocalDate updateAt;
-
     @Min(value = 0, message = "total price must equal or greater than 0")
     BigDecimal totalPrice;
+    String status;
 }

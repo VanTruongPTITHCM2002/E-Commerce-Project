@@ -1,8 +1,10 @@
 package com.ecommerce.order_service.controller;
 
 
+import com.ecommerce.order_service.dto.request.OrderItemRequest;
 import com.ecommerce.order_service.dto.request.OrderRequest;
 import com.ecommerce.order_service.dto.response.ApiResponse;
+import com.ecommerce.order_service.dto.response.OrderItemResponse;
 import com.ecommerce.order_service.dto.response.OrderResponse;
 import com.ecommerce.order_service.service.IOrderService;
 import jakarta.validation.Valid;
@@ -69,15 +71,16 @@ public class OrderController {
         );
     }
 
-    @PutMapping("/orders/{orderId}")
-    public ResponseEntity<ApiResponse<OrderResponse>> updateOrder (@PathVariable int orderId,@RequestBody @Valid OrderRequest orderRequest){
-        OrderResponse orderResponse = this.iOrderService.updateOrder(orderId,orderRequest);
-        return ResponseEntity.ok().body(
-                ApiResponse.<OrderResponse>builder()
-                        .status(HttpStatus.OK.value())
-                        .message("Updated order successfully")
-                        .data(orderResponse)
-                        .build()
-        );
-    }
+//   @PostMapping("/orders/{orderId}/items")
+//   public ResponseEntity<ApiResponse<OrderItemResponse>> addOrderItem (@PathVariable int orderId, @RequestBody OrderItemRequest orderItemRequest){
+//        OrderItemResponse orderItemResponse = this.iOrderService.addOrderItemInOrder(orderId,orderItemRequest);
+//        return  ResponseEntity.status(HttpStatus.CREATED)
+//                .body(
+//                        ApiResponse.<OrderItemResponse>builder()
+//                                .status(HttpStatus.CREATED.value())
+//                                .message("Add item in order successfully")
+//                                .data(orderItemResponse)
+//                                .build()
+//                );
+//   }
 }
