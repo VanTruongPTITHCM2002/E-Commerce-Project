@@ -48,7 +48,8 @@ public class OrderController {
     }
 
     @GetMapping("/{userId}/orders")
-    public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrdersByUserId (@PathVariable String userId){
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrdersByUserId (
+            @PathVariable String userId){
         List<OrderResponse> responses = this.iOrderService.getOrdersByUserId(userId);
         return ResponseEntity.ok().body(
                 ApiResponse.<List<OrderResponse>>builder()
@@ -60,7 +61,8 @@ public class OrderController {
     }
 
     @PostMapping("/orders")
-    public ResponseEntity<ApiResponse<OrderResponse>> addOrder (@RequestBody @Valid OrderRequest orderRequest){
+    public ResponseEntity<ApiResponse<OrderResponse>> addOrder (
+            @RequestBody @Valid OrderRequest orderRequest){
         OrderResponse orderResponse = this.iOrderService.addOrder(orderRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 ApiResponse.<OrderResponse>builder()
@@ -71,16 +73,17 @@ public class OrderController {
         );
     }
 
-//   @PostMapping("/orders/{orderId}/items")
-//   public ResponseEntity<ApiResponse<OrderItemResponse>> addOrderItem (@PathVariable int orderId, @RequestBody OrderItemRequest orderItemRequest){
-//        OrderItemResponse orderItemResponse = this.iOrderService.addOrderItemInOrder(orderId,orderItemRequest);
-//        return  ResponseEntity.status(HttpStatus.CREATED)
-//                .body(
-//                        ApiResponse.<OrderItemResponse>builder()
-//                                .status(HttpStatus.CREATED.value())
-//                                .message("Add item in order successfully")
-//                                .data(orderItemResponse)
-//                                .build()
-//                );
-//   }
+    @PutMapping("/orders/{orderId}")
+    public ResponseEntity<ApiResponse<OrderResponse>> updateOrder (
+            @RequestBody @Valid OrderRequest orderRequest,
+            @PathVariable int orderId){
+        OrderResponse orderResponse = this.iOrderService.updateOrder(orderId, orderRequest);
+        return ResponseEntity.ok().body(
+                ApiResponse.<OrderResponse>builder()
+                        .status(HttpStatus.OK.value())
+                        .message("Updated order successfully")
+                        .data(orderResponse)
+                        .build()
+        );
+    }
 }
