@@ -1,6 +1,7 @@
 package com.ecommerce.auth_service.exception;
 
 import com.ecommerce.auth_service.dto.response.ApiResponse;
+import com.ecommerce.auth_service.utils.ResponseUtils;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,36 +26,18 @@ public class GlobalHandleException {
             String errorMessage = error.getDefaultMessage();
             map.put(fieldName, errorMessage);
         });
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(
-                        ApiResponse.<Map<String,String>>builder()
-                                .status(HttpStatus.BAD_REQUEST.value())
-                                .data(map)
-                                .build()
-                );
+        return ResponseUtils.badRequest(map);
     }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<String>> handleRuntimeException(RuntimeException runtimeException){
         String error = runtimeException.getMessage();
-
-        return ResponseEntity.badRequest().body(
-                ApiResponse.<String>builder()
-                        .status(HttpStatus.BAD_REQUEST.value())
-                        .message(error)
-                        .build()
-        );
+        return ResponseUtils.badRequest(error);
     }
 
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ApiResponse<String>> handleAuthorizeDeniedException(AuthorizationDeniedException authorizationDeniedException){
         String error = authorizationDeniedException.getMessage();
-
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                ApiResponse.<String>builder()
-                        .status(HttpStatus.FORBIDDEN.value())
-                        .message(error)
-                        .build()
-        );
+        return ResponseUtils.forBidden(error);
     }
 }

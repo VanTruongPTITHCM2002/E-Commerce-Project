@@ -1,16 +1,15 @@
 package com.ecommerce.auth_service.controller;
 
-
-
 import com.ecommerce.auth_service.constants.RoleConstants;
 import com.ecommerce.auth_service.dto.request.UserRequest;
 import com.ecommerce.auth_service.dto.response.ApiResponse;
 import com.ecommerce.auth_service.dto.response.UserResponse;
 import com.ecommerce.auth_service.service.IUserService;
+import com.ecommerce.auth_service.utils.ResponseUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
+@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE,makeFinal = true)
 public class UserController {
 
@@ -30,61 +30,31 @@ public class UserController {
     @PreAuthorize(RoleConstants.ADMIN)
     public ResponseEntity<ApiResponse<List<UserResponse>>> getUsers (){
         List<UserResponse> responses = this.iUserService.getUsers();
-        return ResponseEntity.ok()
-                .body(
-                        ApiResponse.<List<UserResponse>>builder()
-                                .status(HttpStatus.OK.value())
-                                .message("Get users successfully")
-                                .data(responses)
-                                .build()
-                );
+        return ResponseUtils.ok("Get users successfully", responses);
     }
 
     @GetMapping("/{userId}")
     @PostAuthorize(RoleConstants.ADMIN + " || returnObject.body.data.username == authentication.name")
     public ResponseEntity<ApiResponse<UserResponse>> getUser (@PathVariable int userId){
         UserResponse userResponse = this.iUserService.getUser(userId);
-        return ResponseEntity.ok().body(
-                ApiResponse.<UserResponse>builder()
-                        .status(HttpStatus.OK.value())
-                        .message("Get user successfully")
-                        .data(userResponse)
-                        .build()
-        );
+        return ResponseUtils.ok("Get user successfully",userResponse);
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<UserResponse>> addUser (@RequestBody UserRequest userRequest){
-            UserResponse userResponse = this.iUserService.addUser(userRequest);
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.<UserResponse>builder()
-                            .status(HttpStatus.CREATED.value())
-                            .message("Created User Successfully")
-                            .data(userResponse)
-                            .build());
+        UserResponse userResponse = this.iUserService.addUser(userRequest);
+        return ResponseUtils.create("Created User Successfully", userResponse);
     }
 
     @PutMapping("/{userId}")
     public ResponseEntity<ApiResponse<UserResponse>> updateUser (@PathVariable int userId, @RequestBody UserRequest userRequest){
         UserResponse userResponse = this.iUserService.updateUser(userId, userRequest);
-        return ResponseEntity.ok().body(
-                ApiResponse.<UserResponse>builder()
-                        .status(HttpStatus.OK.value())
-                        .message("Update user successfully")
-                        .data(userResponse)
-                        .build()
-        );
+        return ResponseUtils.ok("Update user successfully", userResponse);
     }
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponse<Boolean>> deleteUser (@PathVariable int userId){
         boolean isDeletedUser = this.iUserService.deleteUser(userId);
-        return ResponseEntity.ok().body(
-                ApiResponse.<Boolean>builder()
-                        .status(HttpStatus.OK.value())
-                        .message("Delete user " + (isDeletedUser ? "successfully" : "failed"))
-                        .data(isDeletedUser)
-                        .build()
-        );
+        return ResponseUtils.ok("Delete user " + (isDeletedUser ? "successfully" : "failed"), isDeletedUser);
     }
 }
