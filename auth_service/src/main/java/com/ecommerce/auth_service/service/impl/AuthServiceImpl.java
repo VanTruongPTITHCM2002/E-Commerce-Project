@@ -1,8 +1,10 @@
 package com.ecommerce.auth_service.service.impl;
 
+import com.ecommerce.auth_service.common.ResponseMessageFailure;
 import com.ecommerce.auth_service.dto.request.AuthRequest;
 import com.ecommerce.auth_service.dto.response.AuthResponse;
 import com.ecommerce.auth_service.entity.User;
+import com.ecommerce.auth_service.exception.AppException;
 import com.ecommerce.auth_service.repository.UserRepository;
 import com.ecommerce.auth_service.service.IAuthService;
 import com.nimbusds.jose.*;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -36,10 +39,10 @@ public class AuthServiceImpl implements IAuthService {
 
     @Override
     public AuthResponse loginPage(AuthRequest authRequest) throws JOSEException {
-        User user = this.userRepository.findByUsername(authRequest.getUsername()).orElseThrow(() -> new RuntimeException("User not existed"));
+        User user = this.userRepository.findByUsername(authRequest.getUsername()).orElseThrow(() -> new AppException(HttpStatus.BAD_REQUEST.value(), ResponseMessageFailure.USER_NOT_EXISTED.getMessage()));
         boolean isMatch = passwordEncoder.matches(authRequest.getPassword(), user.getPassword());
         if(!isMatch){
-            throw new RuntimeException("Password is incorrect");
+            throw new AppException(HttpStatus.BAD_REQUEST.value(), ResponseMessageFailure.PASSWORD_INCORRECT.getMessage());
         }
         String token = generateToken(user);
         return AuthResponse.builder()

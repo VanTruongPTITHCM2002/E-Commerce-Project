@@ -29,10 +29,11 @@ public class GlobalHandleException {
         return ResponseUtils.badRequest(map);
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<String>> handleRuntimeException(RuntimeException runtimeException){
-        String error = runtimeException.getMessage();
-        return ResponseUtils.badRequest(error);
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<ApiResponse<String>> handleAppException(AppException appException){
+        int status = appException.getStatus();
+        String error = appException.getMessage();
+        return ResponseUtils.unknown(status, error);
     }
 
     @ExceptionHandler(AuthorizationDeniedException.class)

@@ -2,13 +2,14 @@ package com.ecommerce.auth_service.service;
 
 import com.ecommerce.auth_service.dto.request.UserRequest;
 import com.ecommerce.auth_service.dto.response.UserResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 
 public interface IUserService {
     UserResponse addUser (UserRequest userRequest);
-    UserResponse getUser (int userId);
-    List<UserResponse> getUsers();
-    UserResponse updateUser (int userId, UserRequest userRequest);
-    boolean deleteUser (int userId);
+    UserResponse getUser (String userId);
+    Page<UserResponse> getUsers(Pageable pageable);
+    UserResponse updateUser (String userId, UserRequest userRequest);
+    boolean deleteUser (String userId);
 }

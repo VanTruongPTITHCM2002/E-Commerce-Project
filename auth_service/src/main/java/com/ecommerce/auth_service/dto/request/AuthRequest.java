@@ -13,7 +13,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AuthRequest {
     @Schema(description = "Username", example = "admin123", minLength = 4)
-    @Size(min = 4,message = "Username at least 3 characters")
+    @Size(min = 4,message = "Username at least 4 characters")
     @NotBlankCustom(message = "Username should not has blank")
     @NotNull(message = "Username shouldn't null")
     @NotEmpty(message = "Please don't ignore username")

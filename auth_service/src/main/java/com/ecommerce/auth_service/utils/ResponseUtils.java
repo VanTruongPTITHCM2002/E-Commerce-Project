@@ -49,4 +49,20 @@ public class ResponseUtils {
                 .message(message)
                 .build());
     }
+
+    public static <T> ResponseEntity<ApiResponse<T>> internalServerError(String message){
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .body(ApiResponse.<T>builder()
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                        .message(message)
+                        .build());
+    }
+
+    public static <T> ResponseEntity<ApiResponse<T>> unknown (int status, String message){
+        return ResponseEntity.status(status)
+                .body(ApiResponse.<T>builder()
+                        .status(status)
+                        .message(message)
+                        .build());
+    }
 }

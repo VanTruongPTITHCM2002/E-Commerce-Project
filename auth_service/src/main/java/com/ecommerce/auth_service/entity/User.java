@@ -10,7 +10,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users")
+@Table(
+        name = "users",
+        uniqueConstraints = {@UniqueConstraint(name = "uk_users_username", columnNames = "username")})
 @Getter
 @Setter
 @AllArgsConstructor
@@ -24,7 +26,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     String userId;
 
-    @Column(name = "username",length = 50,nullable = false)
+    @Column(name = "username",length = 50,nullable = false, unique = true)
     String username;
 
     @Column(name = "password",length = 255,nullable = false)

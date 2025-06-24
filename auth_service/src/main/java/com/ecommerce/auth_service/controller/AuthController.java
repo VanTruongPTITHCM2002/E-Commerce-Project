@@ -1,9 +1,11 @@
 package com.ecommerce.auth_service.controller;
 
+import com.ecommerce.auth_service.common.ResponseMessageSuccess;
 import com.ecommerce.auth_service.dto.request.AuthRequest;
 import com.ecommerce.auth_service.dto.response.ApiResponse;
 import com.ecommerce.auth_service.dto.response.AuthResponse;
 import com.ecommerce.auth_service.service.IAuthService;
+import com.ecommerce.auth_service.utils.ResponseUtils;
 import com.nimbusds.jose.JOSEException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -40,13 +42,6 @@ public class AuthController {
     })
     public ResponseEntity<ApiResponse<AuthResponse>> loginPage (@RequestBody @Valid AuthRequest authRequest) throws JOSEException {
         AuthResponse authResponse = this.iAuthService.loginPage(authRequest);
-        return ResponseEntity.ok().body(
-                ApiResponse.<AuthResponse>builder()
-                        .status(HttpStatus.OK.value())
-                        .message("Login success")
-                        .data(authResponse)
-                        .build()
-
-        );
+        return ResponseUtils.ok(ResponseMessageSuccess.LOGIN_SUCCESS.getMessage(), authResponse);
     }
 }
