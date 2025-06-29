@@ -1,10 +1,11 @@
 package com.ecommerce.cart_service.entity;
 
+import com.ecommerce.cart_service.common.CartStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.jpa.repository.Temporal;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -32,8 +33,9 @@ public class Cart {
     @Column(name = "updateat")
     Date updateAt;
 
-    String status;
+    @Enumerated(EnumType.STRING)
+    CartStatus status;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<CartItem> cartItemList;
+    List<CartItem> cartItemList = new ArrayList<>();
 }

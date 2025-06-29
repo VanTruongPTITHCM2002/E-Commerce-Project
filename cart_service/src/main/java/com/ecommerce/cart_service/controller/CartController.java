@@ -1,34 +1,43 @@
 package com.ecommerce.cart_service.controller;
 
+import com.ecommerce.cart_service.dto.request.CartItemRequest;
 import com.ecommerce.cart_service.dto.response.ApiResponse;
 import com.ecommerce.cart_service.dto.response.CartResponse;
 import com.ecommerce.cart_service.service.CartService;
+import com.ecommerce.cart_service.utils.ResponseUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/cart")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CartController {
     CartService cartService;
 
-    @GetMapping("/{userId}")
+    @GetMapping("/{userId}/cart")
     public ResponseEntity<ApiResponse<CartResponse>> getCartByUser (@PathVariable String userId){
         CartResponse cartResponse = this.cartService.getCartByUser(userId);
-        return ResponseEntity.ok().body(ApiResponse.<CartResponse>builder()
-                        .status(HttpStatus.OK.value())
-                        .message("Get cart successfully")
-                        .data(cartResponse)
-                .build());
+        return ResponseUtils.ok("Get cart successfully", cartResponse);
+    }
+
+    @PostMapping("/{userId}/cart/items")
+    public ResponseEntity<ApiResponse<CartResponse>> addProductInCart (@PathVariable String userId
+            , @RequestBody CartItemRequest cartItemRequest){
+        CartResponse cartResponse = this.cartService.addProductInCart(userId, cartItemRequest);
+        return ResponseUtils.create("Add product in cart successfully", cartResponse);
+    }
+
+    @DeleteMapping("/{userId}/cart/items/{productId}")
+    public ResponseEntity<ApiResponse<Boolean>> deleteProductInCart (@PathVariable String userId,
+                                                                     @PathVariable String productId){
+        boolean isDelete = this.cartService.deleteProductInCart(userId, productId);
+        return ResponseUtils.ok(isDelete ? "Delete product in cart success" : "Fail");
     }
 }
