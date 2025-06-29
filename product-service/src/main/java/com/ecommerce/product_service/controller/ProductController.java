@@ -17,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,7 +38,7 @@ public class ProductController {
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "sorting", defaultValue = "name") String sorting
     ){
-        Pageable pageable = PageRequest.of(page,size, Sort.by(sorting).descending()); // in frontend must be page + 1;
+        Pageable pageable = PageRequest.of(page, size,  Sort.by(sorting).descending()); // in frontend must be page + 1;
         Page<ProductResponse> productResponsePage = this.productService.getProducts(pageable);
         log.info("Get products have page, size, sorting successfully");
         return ResponseEntity.ok().body(ResponseUtil.success(200,"Get successful data products",productResponsePage));
@@ -54,7 +53,7 @@ public class ProductController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Product>> insertProduct(@RequestBody @Valid ProductRequest productRequest){
-        Product product = productService.insertProduct(productRequest);
+        Product product =  this.productService.insertProduct(productRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(ResponseUtil.success(201,"Insert product successfully",product));
     }
 
