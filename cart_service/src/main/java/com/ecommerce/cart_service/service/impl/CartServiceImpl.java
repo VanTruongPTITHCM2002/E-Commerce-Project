@@ -72,7 +72,7 @@ public class CartServiceImpl implements CartService {
             int totalPrice = cart.getCartItemList().stream().mapToInt(CartItem::getSubTotal).sum();
             cart.setTotal(totalPrice);
             cart.setCartItemList(cartItems);
-
+            cart.setUpdateAt(new Date());
             this.cartRepository.save(cart);
         }
     else {
@@ -97,6 +97,7 @@ public class CartServiceImpl implements CartService {
 
         if(cart.getCartItemList().size() == 1){
                 cart.setStatus(CartStatus.EXPIRED);
+                cart.setUpdateAt(new Date());
                 this.cartRepository.save(cart);
                 return true;
         }
@@ -105,12 +106,21 @@ public class CartServiceImpl implements CartService {
                 .filter(c -> !c.getProductId().equals(productId)).toList();
 
         cart.setCartItemList(cartItems);
+        cart.setUpdateAt(new Date());
         this.cartRepository.save(cart);
         return true;
     }
 
     @Override
     public String clearCart(String userId) {
-        return "";
+        Cart cart = this.cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE)
+                .orElseThrow(
+                        () -> new AppException(HttpStatus.NOT_FOUND.value(), "Not found cart")
+                );
+
+        cart.setUpdateAt(new Date());
+        cart.setStatus(CartStatus.EXPIRED);
+        this.cartRepository.save(cart);
+        return "Delete cart successfully";
     }
 }

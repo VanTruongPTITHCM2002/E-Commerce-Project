@@ -9,7 +9,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,5 +38,11 @@ public class CartController {
                                                                      @PathVariable String productId){
         boolean isDelete = this.cartService.deleteProductInCart(userId, productId);
         return ResponseUtils.ok(isDelete ? "Delete product in cart success" : "Fail");
+    }
+
+    @DeleteMapping("/{userId}/cart/items/clear")
+    public ResponseEntity<ApiResponse<Boolean>> clearCart (@PathVariable String userId){
+        String message = this.cartService.clearCart(userId);
+        return ResponseUtils.ok(message);
     }
 }
