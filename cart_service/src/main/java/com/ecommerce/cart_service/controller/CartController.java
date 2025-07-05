@@ -33,6 +33,13 @@ public class CartController {
         return ResponseUtils.create("Add product in cart successfully", cartResponse);
     }
 
+    @PutMapping("/{userId}/cart/items")
+    public  ResponseEntity<ApiResponse<CartResponse>> updateProductInCart (@PathVariable String userId,
+                                                                           @RequestBody CartItemRequest cartItemRequest){
+        CartResponse cartResponse = this.cartService.updateProductInCart(userId, cartItemRequest);
+        return  ResponseUtils.ok("Update product in cart successfully", cartResponse);
+    }
+
     @DeleteMapping("/{userId}/cart/items/{productId}")
     public ResponseEntity<ApiResponse<Boolean>> deleteProductInCart (@PathVariable String userId,
                                                                      @PathVariable String productId){

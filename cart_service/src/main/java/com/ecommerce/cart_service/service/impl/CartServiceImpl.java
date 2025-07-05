@@ -83,7 +83,26 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public CartResponse updateProductInCart(String userId, CartItemRequest cartItemRequest) {
-        return null;
+        Cart cart = this.cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE).orElseThrow(
+                () -> new AppException(HttpStatus.NOT_FOUND.value(),  "Not found cart")
+        );
+        CartItem cartItem = cart.getCartItemList().stream().filter(cItem -> cItem.getProductId().equals(cartItemRequest.getProductId())).findFirst()
+                .orElseThrow(
+                        () -> new AppException(HttpStatus.NOT_FOUND.value(),  "Product wasn't existed in cart")
+                );
+
+            cartItem.setQuantity(cartItemRequest.getQuantity());
+            cartItem.setSubTotal(cartItemRequest.getQuantity() * cartItem.getPrice());
+            List<CartItem> cartItems = cart.getCartItemList();
+            cartItems.stream().filter(cItem -> cItem.getProductId().equals(cartItemRequest.getProductId())).findFirst()
+                            .map(cItem -> cItem = cartItem);
+            cart.setCartItemList(cartItems);
+            int totalPrice = cart.getCartItemList().stream().mapToInt(CartItem::getSubTotal).sum();
+            cart.setTotal(totalPrice);
+            cart.setUpdateAt(new Date());
+            this.cartRepository.save(cart);
+
+        return cartMapper.toResponse(cart);
     }
 
     @Override
