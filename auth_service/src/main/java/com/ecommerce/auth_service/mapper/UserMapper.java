@@ -9,14 +9,19 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface UserMapper {
-    @Mapping(target = "role",ignore = true)
-    User toUser (UserRequest userRequest);
+public interface UserMapper extends EntityMapper<User, UserRequest, UserResponse> {
 
+
+    @Override
+    @Mapping(target = "role",ignore = true)
+    User toEntity(UserRequest userRequest);
+
+    @Override
     @Mapping(target = "role",source = "role.roleName")
-    UserResponse toUserResponse(User user);
+    UserResponse toResponse(User user);
 
+    @Override
     @Mapping(target = "role",ignore = true)
-    void updateUser(@MappingTarget User user, UserRequest userRequest);
+    void toUpdate(@MappingTarget User user, UserRequest userRequest);
 }
 

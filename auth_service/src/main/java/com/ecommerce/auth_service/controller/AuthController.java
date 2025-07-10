@@ -2,8 +2,10 @@ package com.ecommerce.auth_service.controller;
 
 import com.ecommerce.auth_service.common.ResponseMessageSuccess;
 import com.ecommerce.auth_service.dto.request.AuthRequest;
+import com.ecommerce.auth_service.dto.request.TokenRequest;
 import com.ecommerce.auth_service.dto.response.ApiResponse;
 import com.ecommerce.auth_service.dto.response.AuthResponse;
+import com.ecommerce.auth_service.dto.response.TokenResponse;
 import com.ecommerce.auth_service.service.IAuthService;
 import com.ecommerce.auth_service.utils.ResponseUtils;
 import com.nimbusds.jose.JOSEException;
@@ -43,5 +45,16 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> loginPage (@RequestBody @Valid AuthRequest authRequest) throws JOSEException {
         AuthResponse authResponse = this.iAuthService.loginPage(authRequest);
         return ResponseUtils.ok(ResponseMessageSuccess.LOGIN_SUCCESS.getMessage(), authResponse);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<TokenResponse>> logoutPage (@RequestBody TokenRequest tokenRequest){
+        TokenResponse tokenResponse = this.iAuthService.logoutPage(tokenRequest.getToken());
+        return ResponseUtils.ok("Logout successfully", tokenResponse);
+    }
+
+    @PostMapping("/sign-up")
+    public ResponseEntity<ApiResponse<AuthResponse>> signUpPage (){
+        return null;
     }
 }

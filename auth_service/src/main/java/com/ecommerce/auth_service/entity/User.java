@@ -5,11 +5,15 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.context.event.EventListener;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(
         name = "users",
         uniqueConstraints = {@UniqueConstraint(name = "uk_users_username", columnNames = "username")})
@@ -44,7 +48,8 @@ public class User {
     @Column(name = "email",length = 100)
     String email;
 
-    @Column(name = "registerat")
+    @CreatedDate
+    @Column(name = "registerat", updatable = false)
     LocalDateTime registeredAt;
 
     @Column(name = "status")

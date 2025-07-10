@@ -2,11 +2,14 @@ package com.ecommerce.auth_service.service.impl;
 
 import com.ecommerce.auth_service.common.ResponseMessageFailure;
 import com.ecommerce.auth_service.dto.request.AuthRequest;
+import com.ecommerce.auth_service.dto.request.TokenRequest;
 import com.ecommerce.auth_service.dto.response.AuthResponse;
+import com.ecommerce.auth_service.dto.response.TokenResponse;
 import com.ecommerce.auth_service.entity.User;
 import com.ecommerce.auth_service.exception.AppException;
 import com.ecommerce.auth_service.repository.UserRepository;
 import com.ecommerce.auth_service.service.IAuthService;
+import com.github.benmanes.caffeine.cache.Cache;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -32,6 +35,7 @@ public class AuthServiceImpl implements IAuthService {
 
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;
+    Cache<String, Boolean> tokenBlackListCache;
 
     @NonFinal
     @Value("${jwt.secret_key}")
@@ -49,6 +53,12 @@ public class AuthServiceImpl implements IAuthService {
                 .token(token)
                 .isAuthenticated(true)
                 .build();
+    }
+
+    @Override
+    public TokenResponse logoutPage(String token) {
+        tokenBlackListCache.put(token, true);
+        return TokenResponse.builder().token(token).build();
     }
 
     private String generateToken(User user) throws JOSEException {

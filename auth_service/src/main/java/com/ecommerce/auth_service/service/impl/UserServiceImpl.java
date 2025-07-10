@@ -39,14 +39,14 @@ public class UserServiceImpl implements IUserService {
 
         User user = this.userRepository.findByUsername(userRequest.getUsername()).orElseGet(() -> {
             User user1 = new User();
-            user1 = userMapper.toUser(userRequest);
+            user1 = userMapper.toEntity(userRequest);
             user1.setPassword(passwordEncoder.encode(userRequest.getPassword()));
-            user1.setRegisteredAt(LocalDateTime.now());
+           // user1.setRegisteredAt(LocalDateTime.now());
             user1.setRole(this.roleRepository.findByRoleName(userRequest.getRole()).orElse(null));
             this.userRepository.save(user1);
             return user1;
         });
-        return userMapper.toUserResponse(user);
+        return userMapper.toResponse(user);
     }
 
     @Override
@@ -54,13 +54,13 @@ public class UserServiceImpl implements IUserService {
         User user = this.userRepository.findById(userId).orElseThrow(
                 () -> new AppException(HttpStatus.NOT_FOUND.value(), "User not found")
         );
-        return userMapper.toUserResponse(user);
+        return userMapper.toResponse(user);
     }
 
     @Override
     public Page<UserResponse> getUsers(Pageable pageable) {
         return this.userRepository.findAll(pageable)
-                .map(userMapper::toUserResponse);
+                .map(userMapper::toResponse);
     }
 
     @Override
@@ -69,10 +69,10 @@ public class UserServiceImpl implements IUserService {
         User user = this.userRepository.findById(userId).orElseThrow(
                 () -> new AppException(HttpStatus.NOT_FOUND.value(), "User not found")
         );
-        userMapper.updateUser(user,userRequest);
+        userMapper.toUpdate(user,userRequest);
         user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
         this.userRepository.save(user);
-        return userMapper.toUserResponse(user);
+        return userMapper.toResponse(user);
     }
 
     @Override
