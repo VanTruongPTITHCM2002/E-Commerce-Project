@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.beans.factory.annotation.Value;
 
 @Data
 @NoArgsConstructor
@@ -19,6 +20,11 @@ public class ProductRequest {
     String name;
     @Min(value = 0, message = "Price must be equal greater than 0")
     int price;
+    @Min(value = 0, message = "Cost Price must be equal greater than 0")
+    int costPrice;
+    String thumbnail;
+    @Builder.Default
+    double rating = 0.00;
     @Min(value = 0, message = "Quantity must be equal greater than 0")
     int quantity;
 }

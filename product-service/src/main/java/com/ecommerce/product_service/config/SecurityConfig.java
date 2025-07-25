@@ -35,12 +35,12 @@ public class SecurityConfig {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> {
                             request.requestMatchers(HttpMethod.POST,env.getProperty("API_URL_PRODUCT")).authenticated()
-                                    .requestMatchers(HttpMethod.PUT,env.getProperty("API_URL_PRODUCT_PARAM")).authenticated()
-                                    .requestMatchers(HttpMethod.DELETE,env.getProperty("API_URL_PRODUCT_PARAM")).authenticated()
+                                    .requestMatchers(env.getProperty("API_URL_PRODUCT_PARAM")).permitAll()
                                     .anyRequest().permitAll();
                 }) .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
                         .decoder(jwtDecoder())
-                        .jwtAuthenticationConverter(jwtAuthenticationConverter())))
+                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                        .authenticationEntryPoint(new JwtAuthenticationEntryPoint()))
                 .build();
     }
 
