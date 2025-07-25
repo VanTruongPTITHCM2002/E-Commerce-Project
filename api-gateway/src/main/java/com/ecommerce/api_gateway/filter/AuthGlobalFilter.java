@@ -18,6 +18,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -26,9 +27,13 @@ import java.util.List;
 public class AuthGlobalFilter implements GlobalFilter, Ordered {
 
     ObjectMapper objectMapper;
+    String[]endPointsPublic = {"/api/v1/auth/login","/api/v1/auth/logout"};
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        if(Arrays.stream(endPointsPublic).anyMatch(endPoint -> endPoint.equals(exchange.getRequest().getURI().getPath())))
+            return chain.filter(exchange);
+
         List<String> authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION);
 
         if (CollectionUtils.isEmpty(authHeader)){
