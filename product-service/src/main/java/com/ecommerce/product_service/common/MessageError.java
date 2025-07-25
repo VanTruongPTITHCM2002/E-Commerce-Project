@@ -11,6 +11,7 @@ public enum MessageError {
     PRODUCT_UPDATE_FAILED("Failed to update product."),
     PRODUCT_DELETE_FAILED("Cannot delete product. Product not found."),
     INVALID_PRODUCT_DATA("Invalid product data."),
-    INTERNAL_SERVER_ERROR("An unexpected error occurred. Please try again later.");
+    INTERNAL_SERVER_ERROR("An unexpected error occurred. Please try again later."),
+    UNAUTHORIZED("Unauthorized access. Please log in.");
     private final String message;
 }
