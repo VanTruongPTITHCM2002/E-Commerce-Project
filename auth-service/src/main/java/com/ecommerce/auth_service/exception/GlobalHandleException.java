@@ -37,6 +37,11 @@ public class GlobalHandleException {
         return ResponseUtils.unknown(status, error);
     }
 
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<ApiResponse<String>> handleNullPointerException(NullPointerException nullPointerException){
+        return ResponseUtils.badRequest("Please check, value can null");
+    }
+
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ApiResponse<String>> handleAuthorizeDeniedException(AuthorizationDeniedException authorizationDeniedException){
         String error = authorizationDeniedException.getMessage();

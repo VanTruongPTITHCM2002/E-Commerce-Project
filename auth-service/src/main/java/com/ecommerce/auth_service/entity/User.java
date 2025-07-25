@@ -52,7 +52,7 @@ public class User {
     @Column(name = "registerat", updatable = false)
     LocalDateTime registeredAt;
 
-    @Column(name = "status")
+    @Column(name = "status", nullable = false)
     Boolean status = true;
 
     @ManyToOne(fetch = FetchType.LAZY,optional = false)

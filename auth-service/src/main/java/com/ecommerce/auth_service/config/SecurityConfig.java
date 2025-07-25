@@ -30,9 +30,12 @@ public class SecurityConfig {
     @Value("${jwt.secret_key}")
     private String SECRET_KEY;
 
-    private final String []publicEndpoints = {"/api/v1/auth/login","/api/v1/auth/logout"
+    private final String []publicEndpoints = {
+            "/api/v1/auth/login"
+            ,"/api/v1/auth/logout"
             ,"/api/v1/auth/sign-up"
-            ,"/api/v1/users"};
+            ,"/api/v1/users"
+    };
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, Cache<String, Boolean> tokenBlacklistCache) throws Exception {
@@ -47,7 +50,8 @@ public class SecurityConfig {
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())
 
                         ).authenticationEntryPoint(new JwtAuthenticationEntryPoint())
-                ).build();
+                )
+                .build();
     }
 
     @Bean
