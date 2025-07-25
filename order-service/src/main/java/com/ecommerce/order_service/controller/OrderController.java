@@ -2,12 +2,14 @@ package com.ecommerce.order_service.controller;
 
 
 import com.ecommerce.order_service.Enum.OrderStatus;
+import com.ecommerce.order_service.common.MessageSuccess;
 import com.ecommerce.order_service.dto.request.OrderItemRequest;
 import com.ecommerce.order_service.dto.request.OrderRequest;
 import com.ecommerce.order_service.dto.response.ApiResponse;
 import com.ecommerce.order_service.dto.response.OrderItemResponse;
 import com.ecommerce.order_service.dto.response.OrderResponse;
 import com.ecommerce.order_service.service.IOrderService;
+import com.ecommerce.order_service.utils.ResponseUtils;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -39,49 +41,27 @@ public class OrderController {
     ){
         Pageable pageable = PageRequest.of(size,page, Sort.by(sorting).descending());
         List<OrderResponse> orderResponseList = this.iOrderService.getOrders(pageable);
-        return ResponseEntity.ok().body(
-          ApiResponse.<List<OrderResponse>>builder()
-                  .status(HttpStatus.OK.value())
-                  .message("Get orders successfully")
-                  .data(orderResponseList)
-                  .build()
-        );
+        return ResponseUtils.ok(MessageSuccess.ORDER_LIST_RETRIEVED_SUCCESSFULLY.getMessage(), orderResponseList);
     }
 
     @GetMapping("/{userId}/orders")
     public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrdersByUserId (
             @PathVariable String userId){
         List<OrderResponse> responses = this.iOrderService.getOrdersByUserId(userId);
-        return ResponseEntity.ok().body(
-                ApiResponse.<List<OrderResponse>>builder()
-                        .status(HttpStatus.OK.value())
-                        .message("Get orders of " + userId + " successfully")
-                        .data(responses)
-                        .build()
-        );
+        return ResponseUtils.ok(MessageSuccess.ORDER_LIST_RETRIEVED_SUCCESSFULLY.getMessage(), responses);
     }
 
     @GetMapping("/orders/{orderId}")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrderByOrderId(@PathVariable int orderId){
         OrderResponse response = this.iOrderService.getOrderById(orderId);
-        return ResponseEntity.ok().body(ApiResponse.<OrderResponse>builder()
-                        .status(HttpStatus.OK.value())
-                        .message("Get order successfully")
-                        .data(response)
-                .build());
+        return  ResponseUtils.ok(MessageSuccess.ORDER_RETRIEVED_SUCCESSFULLY.getMessage(), response);
     }
 
     @PostMapping("{userId}/orders")
     public ResponseEntity<ApiResponse<OrderResponse>> addOrder (
             @PathVariable String userId){
         OrderResponse orderResponse = this.iOrderService.addOrder(userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                ApiResponse.<OrderResponse>builder()
-                        .status(HttpStatus.CREATED.value())
-                        .message("Created order successfully")
-                        .data(orderResponse)
-                        .build()
-        );
+        return ResponseUtils.create(MessageSuccess.ORDER_CREATED_SUCCESSFULLY.getMessage(), orderResponse);
     }
 
     @PutMapping("/orders/{orderId}")
@@ -89,25 +69,14 @@ public class OrderController {
             @RequestBody @Valid OrderRequest orderRequest,
             @PathVariable int orderId){
         OrderResponse orderResponse = this.iOrderService.updateOrder(orderId, orderRequest);
-        return ResponseEntity.ok().body(
-                ApiResponse.<OrderResponse>builder()
-                        .status(HttpStatus.OK.value())
-                        .message("Updated order successfully")
-                        .data(orderResponse)
-                        .build()
-        );
+       return ResponseUtils.ok(MessageSuccess.ORDER_UPDATED_SUCCESSFULLY.getMessage(), orderResponse);
     }
 
     @PutMapping("/orders/{orderId}/status")
     public ResponseEntity<ApiResponse<String>> updateOrderStatus (@PathVariable int orderId
     , @RequestParam String orderStatus){
         this.iOrderService.updateOrderStatus(orderId, OrderStatus.valueOf(orderStatus));
-        return ResponseEntity.ok().body(
-                ApiResponse.<String>builder()
-                        .status(HttpStatus.OK.value())
-                        .message("Update status order successfully")
-                        .build()
-        );
+        return ResponseUtils.ok(MessageSuccess.ORDER_STATUS_UPDATED_SUCCESSFULLY.getMessage());
     }
 
     @DeleteMapping("/orders/{orderId}")

@@ -2,6 +2,7 @@ package com.ecommerce.order_service.service.impl;
 
 import com.ecommerce.order_service.Enum.NotificationType;
 import com.ecommerce.order_service.Enum.OrderStatus;
+import com.ecommerce.order_service.common.MessageError;
 import com.ecommerce.order_service.dto.request.NotificationRequest;
 import com.ecommerce.order_service.dto.request.OrderRequest;
 import com.ecommerce.order_service.dto.response.CartResponse;
@@ -96,7 +97,7 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     public void updateOrderStatus(int orderId, OrderStatus orderStatus) {
         Order order = this.orderRepository.findById(orderId).orElseThrow(
-                () -> new AppException(HttpStatus.NOT_FOUND.value(), "Not found order")
+                () -> new AppException(HttpStatus.NOT_FOUND.value(), MessageError.ORDER_NOT_FOUND.getMessage())
         );
 
         order.setStatus(orderStatus);
@@ -124,7 +125,7 @@ public class OrderServiceImpl implements IOrderService {
 
     private Order getOrderByOrderId (int orderId){
         return this.orderRepository.findById(orderId).orElseThrow(
-                () -> new AppException(HttpStatus.NOT_FOUND.value(), "Order not found")
+                () -> new AppException(HttpStatus.NOT_FOUND.value(), MessageError.ORDER_NOT_FOUND.getMessage())
         );
     }
 }
