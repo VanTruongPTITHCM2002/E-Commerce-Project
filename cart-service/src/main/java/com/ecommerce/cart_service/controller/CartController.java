@@ -1,5 +1,6 @@
 package com.ecommerce.cart_service.controller;
 
+import com.ecommerce.cart_service.common.MessageSuccess;
 import com.ecommerce.cart_service.dto.request.CartItemRequest;
 import com.ecommerce.cart_service.dto.response.ApiResponse;
 import com.ecommerce.cart_service.dto.response.CartResponse;
@@ -11,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,24 +23,24 @@ public class CartController {
     CartService cartService;
 
     @GetMapping("/{userId}/cart")
-    @PostAuthorize("returnObject.body.data.userId == authentication.name")
+//    @PostAuthorize("returnObject.body.data.userId == authentication.name")
     public ResponseEntity<ApiResponse<CartResponse>> getCartByUser (@PathVariable String userId){
         CartResponse cartResponse = this.cartService.getCartByUser(userId);
-        return ResponseUtils.ok("Get cart successfully", cartResponse);
+        return ResponseUtils.ok(MessageSuccess.CART_RETRIEVED.getMessage(), cartResponse);
     }
 
     @PostMapping("/{userId}/cart/items")
-    public ResponseEntity<ApiResponse<CartResponse>> addProductInCart (@PathVariable String userId
-            , @RequestBody @Valid CartItemRequest cartItemRequest){
-        CartResponse cartResponse = this.cartService.addProductInCart(userId, cartItemRequest);
-        return ResponseUtils.create("Add product in cart successfully", cartResponse);
+    public ResponseEntity<ApiResponse<CartResponse>> addProductInCart ( @PathVariable String userId
+            , @RequestBody CartItemRequest cartItemRequest){
+        CartResponse cartResponse = this.cartService.addProductInCart( userId, cartItemRequest);
+        return ResponseUtils.create(MessageSuccess.CART_ITEM_ADDED.getMessage(), cartResponse);
     }
 
     @PutMapping("/{userId}/cart/items")
     public  ResponseEntity<ApiResponse<CartResponse>> updateProductInCart (@PathVariable String userId,
                                                                            @RequestBody @Valid CartItemRequest cartItemRequest){
         CartResponse cartResponse = this.cartService.updateProductInCart(userId, cartItemRequest);
-        return  ResponseUtils.ok("Update product in cart successfully", cartResponse);
+        return  ResponseUtils.ok(MessageSuccess.CART_ITEM_UPDATED.getMessage(), cartResponse);
     }
 
     @PutMapping("/{userId}/cart")
@@ -55,12 +55,12 @@ public class CartController {
     public ResponseEntity<ApiResponse<Boolean>> deleteProductInCart (@PathVariable String userId,
                                                                      @PathVariable String productId){
         boolean isDelete = this.cartService.deleteProductInCart(userId, productId);
-        return ResponseUtils.ok(isDelete ? "Delete product in cart success" : "Fail");
+        return ResponseUtils.ok(MessageSuccess.CART_ITEM_REMOVED.getMessage(), isDelete);
     }
 
     @DeleteMapping("/{userId}/cart/items/clear")
     public ResponseEntity<ApiResponse<Boolean>> clearCart (@PathVariable String userId){
-        String message = this.cartService.clearCart(userId);
-        return ResponseUtils.ok(message);
+        this.cartService.clearCart(userId);
+        return ResponseUtils.ok(MessageSuccess.CART_CLEARED.getMessage());
     }
 }
