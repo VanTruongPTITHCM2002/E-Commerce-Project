@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 public interface IUserService {
     UserResponse addUser (UserRequest userRequest);
     UserResponse getUser (String userId);
-    Page<UserResponse> getUsers(Pageable pageable);
+    Page<UserResponse> getUsers(Pageable pageable, String firstName, String lastName, String phoneNumber, String email);
     UserResponse updateUser (String userId, UserRequest userRequest);
     boolean deleteUser (String userId);
 }
