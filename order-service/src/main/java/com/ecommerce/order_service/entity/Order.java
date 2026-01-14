@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,6 +20,7 @@ import java.util.List;
 @Setter
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@EntityListeners(AuditingEntityListener.class)
 @Accessors(chain = true)
 public class Order {
 
@@ -30,10 +33,16 @@ public class Order {
     String userId;
 
     @Column(name = "create_at")
+    @CreatedDate
     LocalDate createAt;
 
     @Column(name = "update_at")
     LocalDate updateAt;
+
+    @PreUpdate
+    public void onUpdate(){
+        this.updateAt = LocalDate.now();
+    }
 
     @Enumerated(EnumType.STRING)
     OrderStatus status;
