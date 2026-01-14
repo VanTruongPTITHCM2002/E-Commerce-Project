@@ -32,6 +32,6 @@ public class OrderItem {
     Order order;
 
     int quantity;
-    BigDecimal price;
-    BigDecimal subTotal;
+    int price;
+    int subTotal;
 }
