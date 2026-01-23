@@ -15,11 +15,13 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,20 +36,29 @@ public class OrderController {
     IOrderService iOrderService;
 
     @GetMapping("/orders")
-    public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrders(
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Page<OrderResponse>>> getOrders(
             @RequestParam (name = "size", defaultValue = "5") int size,
             @RequestParam (name = "page", defaultValue = "0") int page,
-            @RequestParam (name = "sorting", defaultValue = "createAt") String sorting
+            @RequestParam (name = "sorting", defaultValue = "createAt") String sorting,
+            @RequestParam(name = "userId", required = false) String userId,
+            @RequestParam(name = "status", required = false) String status
     ){
         Pageable pageable = PageRequest.of(size,page, Sort.by(sorting).descending());
-        List<OrderResponse> orderResponseList = this.iOrderService.getOrders(pageable);
+        Page<OrderResponse> orderResponseList = this.iOrderService.getOrders(pageable, userId, status);
         return ResponseUtils.ok(MessageSuccess.ORDER_LIST_RETRIEVED_SUCCESSFULLY.getMessage(), orderResponseList);
     }
 
     @GetMapping("/{userId}/orders")
-    public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrdersByUserId (
-            @PathVariable String userId){
-        List<OrderResponse> responses = this.iOrderService.getOrdersByUserId(userId);
+    public ResponseEntity<ApiResponse<Page<OrderResponse>>> getOrdersByUserId (
+            @PathVariable String userId,
+            @RequestParam (name = "size", defaultValue = "5") int size,
+            @RequestParam (name = "page", defaultValue = "0") int page,
+            @RequestParam (name = "sorting", defaultValue = "createAt") String sorting,
+            @RequestParam (name = "status", required = false) String status
+            ){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sorting).descending());
+        Page<OrderResponse> responses = this.iOrderService.getOrdersByUserId(pageable,userId, status);
         return ResponseUtils.ok(MessageSuccess.ORDER_LIST_RETRIEVED_SUCCESSFULLY.getMessage(), responses);
     }
 
