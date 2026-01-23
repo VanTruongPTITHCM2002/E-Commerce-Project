@@ -16,9 +16,12 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -55,9 +58,22 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public Page<UserResponse> getUsers(Pageable pageable) {
-        return this.userRepository.findAll(pageable)
-                .map(userMapper::toResponse);
+    public Page<UserResponse> getUsers(Pageable pageable, String firstName, String lastName, String phoneNumber, String email) {
+        Specification<User> specification = Specification.where(null);
+        specification = specification.and(Optional.ofNullable(firstName).map(
+                f -> (Specification<User>)(root, query, cb) -> cb.like(cb.lower(root.get("firstName")),f.toLowerCase().trim())
+        ).orElse(null))
+                        .and(Optional.ofNullable(lastName).map(
+                                l -> (Specification<User>)(root, query, cb) -> cb.like(cb.lower(root.get("lastName")), l.toLowerCase().trim())).orElse(null))
+                        .and(Optional.ofNullable(phoneNumber).map(
+                                p -> (Specification<User>)(root, query, cb) -> cb.like(cb.lower(root.get("phoneNumber")), "%" + p + "%")).orElse(null))
+                        .and(Optional.ofNullable(email).map(
+                                e -> (Specification<User>)(root, query, cb) -> cb.like(cb.lower(root.get("email")), "%" + email.toLowerCase().trim() + "%")
+                        ).orElse(null)
+        );
+
+        Page<User> pages = this.userRepository.findAll(specification, pageable);
+        return pages.map(this.userMapper::toResponse);
     }
 
     @Override
