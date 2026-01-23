@@ -20,13 +20,16 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -42,10 +45,16 @@ public class OrderServiceImpl implements IOrderService {
     NotificationServiceClient notificationServiceClient;
 
     @Override
-    public List<OrderResponse> getOrders(Pageable pageable) {
-        return this.orderRepository.findAll(pageable).stream().map(
-                orderMapper::toResponse
-        ).toList();
+    public Page<OrderResponse> getOrders(Pageable pageable, String userId, String status) {
+        Specification<Order> specification = Specification.where(null);
+        specification = specification.and(Optional.ofNullable(userId).map(username -> (Specification<Order>)(root, query, cb)
+         -> cb.equal(root.get("userId"), username)
+        ).orElse(null))
+                .and(Optional.ofNullable(status).
+                 map(s -> (Specification<Order>)(root, query, cb) -> cb.equal(root.get("status"),s))
+                .orElse(null));
+        Page<Order> orders = this.orderRepository.findAll(specification, pageable);
+        return orders.map(orderMapper::toResponse);
     }
 
     @Override
@@ -55,11 +64,13 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     @Override
-    public List<OrderResponse> getOrdersByUserId(String userId) {
-        return this.orderRepository.findByUserId(userId)
-                .stream()
-                .map(orderMapper::toResponse)
-                .toList();
+    public Page<OrderResponse> getOrdersByUserId(Pageable pageable,String userId, String status) {
+            Specification<Order> specification = Specification.where((root, query, cb) -> cb.equal(root.get("userId"), userId));
+            specification = specification.and(Optional.ofNullable(status).map(
+                    s -> (Specification<Order>)(root, query, cb) -> cb.equal(root.get("status"), s)
+            ).orElse(null));
+            Page<Order> orders = this.orderRepository.findAll(specification, pageable);
+            return orders.map(orderMapper::toResponse);
     }
 
     @Override
@@ -75,9 +86,9 @@ public class OrderServiceImpl implements IOrderService {
         List <OrderItem> items = cartResponse.getCartItemResponseList().stream().map(
                 c -> OrderItem.builder()
                         .name(c.getName())
-                        .price(BigDecimal.valueOf(c.getPrice()))
+                        .price(c.getPrice())
                         .quantity(c.getQuantity())
-                        .subTotal(BigDecimal.valueOf(c.getSubTotal()))
+                        .subTotal(c.getSubTotal())
                         .order(order)
                         .build()).toList();
         order.setOrderItemList(items);
@@ -107,6 +118,7 @@ public class OrderServiceImpl implements IOrderService {
                         .message("Order #" + order.getOrderId() + " " + orderStatus.getName())
                         .type(NotificationType.MULTI)
                 .build());
+        if(orderStatus.getName().equals(OrderStatus.PAID.getName())) this.cartServiceClient.updateStatusCart(order.getUserId(),false);
         this.orderRepository.save(order);
     }
 
