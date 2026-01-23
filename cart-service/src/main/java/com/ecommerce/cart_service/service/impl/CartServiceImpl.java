@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@CheckUserAccess
 public class CartServiceImpl implements CartService {
 
     CartRepository cartRepository;
@@ -41,6 +40,7 @@ public class CartServiceImpl implements CartService {
     CartMapper cartMapper;
 
     @Override
+    @CheckUserAccess
     public CartResponse getCartByUser(String userId) {
         Cart cart = this.cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(),MessageError.CART_NOT_FOUND.getMessage()));
@@ -48,6 +48,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @CheckUserAccess
     public CartResponse addProductInCart( String userId, CartItemRequest cartItemRequest) {
         ProductResponse response;
         try {
@@ -94,6 +95,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @CheckUserAccess
     public CartResponse updateProductInCart(String userId, CartItemRequest cartItemRequest) {
         Cart cart = this.cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE).orElseThrow(
                 () -> new AppException(HttpStatus.NOT_FOUND.value(),MessageError.CART_NOT_FOUND.getMessage())
@@ -126,6 +128,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @CheckUserAccess
     public boolean deleteProductInCart(String userId, String productId) {
         Cart cart = this.cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE).orElseThrow(
                 () -> new AppException(HttpStatus.NOT_FOUND.value(), MessageError.CART_NOT_FOUND.getMessage())
@@ -150,15 +153,25 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void updateStatusCart(String userId, boolean check) {
-        Cart cart = this.cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE).orElseThrow(
-                () -> new AppException(HttpStatus.NOT_FOUND.value(), MessageError.CART_NOT_FOUND.getMessage())
-        );
-        if(check) cart.setStatus(CartStatus.PENDING_PAYMENT);
-        else cart.setStatus(CartStatus.CHECK_OUT);
+        Cart cart;
+        if(check){
+            cart = this.cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE).orElseThrow(
+                    () -> new AppException(HttpStatus.NOT_FOUND.value(), MessageError.CART_NOT_FOUND.getMessage())
+            );
+            cart.setStatus(CartStatus.PENDING_PAYMENT);
+        }
+        else{
+            System.out.println("ADSDSAD");
+            cart = this.cartRepository.findByUserIdAndStatus(userId, CartStatus.PENDING_PAYMENT).orElseThrow(
+                    () -> new AppException(HttpStatus.NOT_FOUND.value(), MessageError.CART_NOT_FOUND.getMessage())
+            );
+            cart.setStatus(CartStatus.CHECK_OUT);
+        }
         this.cartRepository.save(cart);
     }
 
     @Override
+    @CheckUserAccess
     public void clearCart(String userId) {
         Cart cart = this.cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE)
                 .orElseThrow(
