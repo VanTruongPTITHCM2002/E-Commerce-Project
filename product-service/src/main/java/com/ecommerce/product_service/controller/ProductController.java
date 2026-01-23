@@ -3,13 +3,14 @@ package com.ecommerce.product_service.controller;
 import com.ecommerce.product_service.common.MessageSuccess;
 import com.ecommerce.product_service.constants.RoleConstants;
 import com.ecommerce.product_service.dto.request.ProductRequest;
+import com.ecommerce.product_service.dto.response.PageResponse;
 import com.ecommerce.product_service.dto.response.ProductAdminResponse;
 import com.ecommerce.product_service.dto.response.ProductResponse;
-import com.ecommerce.product_service.entity.Product;
 import com.ecommerce.product_service.dto.response.ApiResponse;
+import com.ecommerce.product_service.entity.Product;
 import com.ecommerce.product_service.service.ProductService;
 import com.ecommerce.product_service.utils.ResponseUtils;
-import jakarta.transaction.Transactional;
+import com.turkraft.springfilter.boot.Filter;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -53,7 +56,7 @@ public class ProductController {
             @RequestParam(name = "endDate", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ){
-        Pageable pageable = PageRequest.of(page, size,  Sort.by(sorting).descending()); // in frontend must be page + 1;
+        Pageable pageable = PageRequest.of(page, size,  Sort.by(sorting).descending());
         Page<ProductAdminResponse> productResponsePage = this.productService.getProducts(pageable, minPrice, maxPrice, keyword, isDeleted, startDate, endDate);
         return ResponseUtils.ok(MessageSuccess.PRODUCT_LIST_RETRIEVED.getMessage(),productResponsePage);
     }
@@ -72,6 +75,16 @@ public class ProductController {
         return ResponseUtils.ok(MessageSuccess.PRODUCT_LIST_RETRIEVED.getMessage(),responses);
     }
 
+    @GetMapping("/products/paginate")
+    public ResponseEntity<ApiResponse<PageResponse<ProductAdminResponse>>> getProductsPaginate (
+            @Filter Specification<Product> specification,
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(name = "filter", defaultValue = "null") String filter
+            ) {
+        PageResponse<ProductAdminResponse> responses = this.productService.getProducts(specification, pageable, filter);
+        return ResponseUtils.ok(MessageSuccess.PRODUCT_LIST_RETRIEVED.getMessage(), responses);
+    }
+
     @GetMapping("/admin/products/{productId}")
     @PreAuthorize(RoleConstants.ROLE_ADMIN)
     public ResponseEntity<ApiResponse<ProductAdminResponse>> getProductById(@PathVariable("productId") String productId){
@@ -87,7 +100,6 @@ public class ProductController {
 
     @PostMapping("/admin/products")
     @PreAuthorize(RoleConstants.ROLE_ADMIN)
-    @Transactional
     public ResponseEntity<ApiResponse<ProductAdminResponse>> insertProduct(@RequestBody @Valid ProductRequest productRequest){
         ProductAdminResponse response =  this.productService.insertProduct(productRequest);
         return ResponseUtils.create(MessageSuccess.PRODUCT_CREATED_SUCCESSFULLY.getMessage(), response);
@@ -95,14 +107,12 @@ public class ProductController {
 
     @PutMapping("/admin/products/{productId}")
     @PreAuthorize(RoleConstants.ROLE_ADMIN)
-    @Transactional
     public  ResponseEntity<ApiResponse<ProductAdminResponse>> updateProduct (@PathVariable String productId, @RequestBody ProductRequest productRequest){
         ProductAdminResponse response = this.productService.updateProduct(productId,productRequest);
         return ResponseUtils.ok(MessageSuccess.PRODUCT_UPDATED_SUCCESSFULLY.getMessage(), response);
     }
 
     @PutMapping("/products/{productId}")
-    @Transactional
     public ResponseEntity<ApiResponse<Boolean>> updateProductFromCart(@PathVariable String productId,
                                                                       @RequestParam int quantity, @RequestParam boolean isAdd){
         Boolean isSuccess = this.productService.updateProductFromCart(productId, quantity, isAdd);
@@ -111,7 +121,6 @@ public class ProductController {
 
     @DeleteMapping("/admin/products/{productId}")
     @PreAuthorize(RoleConstants.ROLE_ADMIN)
-    @Transactional
     public  ResponseEntity<ApiResponse<Map<String,Boolean>>> deleteProduct (@PathVariable String productId){
         boolean isDeletedProduct = this.productService.deleteProduct(productId);
         Map<String,Boolean> map = new HashMap<>();
