@@ -1,16 +1,14 @@
 package com.ecommerce.product_service.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -22,46 +20,65 @@ import java.util.UUID;
 @Builder
 @DynamicUpdate
 @DynamicInsert
-@EntityListeners(AuditingEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Product {
+public class Product extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "product_id")
-    UUID productId;
+    UUID id;
 
-    @Column(name = "product_name",nullable = false,length = 100, unique = true)
+    @Column(name = "sku", unique = true, length = 64)
+    String sku;
+
+    @Column(name = "product_name",nullable = false,length = 100)
     String name;
+
+    @Column(name = "slug", unique = true, length = 200)
+    String slug;
 
     @Column(name = "thumbnail")
     String thumbnail;
 
-    @Column(name = "price",nullable = false)
-    int price;
+    @ElementCollection
+    @CollectionTable(name = "product_image", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "image_url", length =  500)
+    List<String> images = new ArrayList<>();
 
-    @Column(name = "cost_price")
-    int costPrice;
+    @Column(name = "price",nullable = false, precision = 15, scale = 2)
+    BigDecimal price;
 
-    @Column(name = "quantity", nullable = false)
-    int quantity;
+    @Column(name = "original_price", precision = 15, scale = 2)
+    BigDecimal originalPrice;
+
+    @Column(name = "cost_price", precision = 15, scale = 2)
+    BigDecimal costPrice;
+
+    @Column(name = "quantity", nullable = false, precision = 15, scale = 2)
+    BigDecimal quantity;
 
     @Column(name = "rating")
-    double rating;
+    BigDecimal rating;
 
-    @Column(name = "create_at")
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @CreatedDate
-    LocalDateTime createAt;
+    @Column(name = "description", columnDefinition = "TEXT")
+    String description;
 
-    @Column(name = "update_at")
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    LocalDateTime updateAt;
+    @Column(name = "short_description", columnDefinition = "TEXT")
+    String shortDescription;
 
-    @PreUpdate
-    public void onUpdate(){
-        this.updateAt = LocalDateTime.now();
-    }
+    @Column(name = "review_count")
+    Integer reviewCount = 0;
 
     @Column(name = "is_deleted")
     boolean isDeleted = false;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "category_id")
+    Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "brand_id")
+    Brand brand;
+
+    @OneToMany(mappedBy = "product", orphanRemoval = true)
+    List<ProductVariant> productVariants = new ArrayList<>();
 }
