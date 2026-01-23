@@ -2,6 +2,7 @@ package com.ecommerce.product_service.service.impl;
 
 import com.ecommerce.product_service.common.MessageError;
 import com.ecommerce.product_service.dto.request.ProductRequest;
+import com.ecommerce.product_service.dto.response.PageResponse;
 import com.ecommerce.product_service.dto.response.ProductAdminResponse;
 import com.ecommerce.product_service.dto.response.ProductResponse;
 import com.ecommerce.product_service.entity.Product;
@@ -20,10 +21,15 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,6 +44,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Cacheable("products")
+    @Transactional(readOnly = true)
     public Page<ProductAdminResponse> getProducts(Pageable pageable, BigInteger minPrice, BigInteger maxPrice,
                                                   String keyWord, Boolean isDeleted, LocalDate startDate, LocalDate endDate) {
         Specification<Product> specification = Specification.where(null);
@@ -63,6 +70,25 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public PageResponse<ProductAdminResponse> getProducts(Specification<Product> specification, Pageable pageable, String filter) {
+        log.info("Start get products by paginate and filter");
+        try {
+            Page<Product> productPage = this.productRepository.findAll(specification, pageable);
+
+            Page<ProductAdminResponse> adminResponseList = productPage.map(
+                    this.productMapper::toProductAdminResponse);
+
+            return new PageResponse<>(adminResponseList, "Products", filter);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            log.info("End get products by paginate and filter");
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Page<ProductResponse> getPublishProduct(Pageable pageable, BigInteger minPrice, BigInteger maxPrice, String keyword) {
         Specification<Product> specification = Specification.where((root, query, cb) -> cb.isFalse(root.get("isDeleted")));
 
@@ -81,6 +107,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @CacheEvict(value = "products", allEntries = true)
+    @Transactional(readOnly = true)
     public ProductAdminResponse insertProduct(ProductRequest productRequest) {
         boolean isExistsName = this.productRepository.existsByName(productRequest.getName());
         if(isExistsName) throw new ProductAlreadyExistsException(MessageError.INVALID_PRODUCT_DATA.getMessage());
@@ -91,12 +118,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Cacheable(value = "productById", key = "#productId")
+    @Transactional(readOnly = true)
     public ProductAdminResponse getProductById(String productId) {
         return productMapper.toProductAdminResponse(this.productRepository.findById(UUID.fromString(productId)).
                 orElseThrow(() -> new ProductNotFoundException(MessageError.PRODUCT_NOT_FOUND.getMessage())));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductResponse getProductDetail(String productId) {
         return productMapper.toProductResponse(this.productRepository.findById(UUID.fromString(productId)).filter(
                 product -> !product.isDeleted()
@@ -108,6 +137,7 @@ public class ProductServiceImpl implements ProductService {
             @CacheEvict(value = "productById", key = "#productId"),
             @CacheEvict(value = "products", allEntries = true)
     })
+    @Transactional
     public ProductAdminResponse updateProduct(String productId, ProductRequest productRequest) {
         Product product = this.productRepository.findById(UUID.fromString(productId))
                 .orElseThrow(() -> new ProductNotFoundException(MessageError.PRODUCT_NOT_FOUND.getMessage()));
@@ -117,12 +147,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public boolean updateProductFromCart(String productId, int quantity, boolean isAdd) {
         Product product = this.productRepository.findById(UUID.fromString(productId))
                 .orElseThrow(() -> new ProductNotFoundException(MessageError.PRODUCT_NOT_FOUND.getMessage()));
-        if(isAdd) product.setQuantity(product.getQuantity() + quantity);
+        if(isAdd) product.setQuantity(product.getQuantity().add(BigDecimal.valueOf(quantity)));
         else {
-            product.setQuantity(product.getQuantity() > quantity ? product.getQuantity() - quantity : product.getQuantity());
+            product.setQuantity(product.getQuantity().compareTo(BigDecimal.valueOf(quantity)) < 0 ? product.getQuantity().subtract(BigDecimal.valueOf(quantity)) : product.getQuantity());
         }
         this.productRepository.save(product);
         return true;
@@ -133,10 +164,14 @@ public class ProductServiceImpl implements ProductService {
             @CacheEvict(value = "productById", key = "#productId"),
             @CacheEvict(value = "products", allEntries = true)
     })
+    @Transactional
     public boolean deleteProduct(String productId) {
         Product product = this.productRepository.findById(UUID.fromString(productId))
                 . orElseThrow(() -> new ProductNotFoundException(MessageError.PRODUCT_NOT_FOUND.getMessage()));
         product.setDeleted(true);
+        product.setDeletedAt(ZonedDateTime.now());
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        product.setDeletedBy(username);
         this.productRepository.save(product);
         return true;
     }
