@@ -109,11 +109,18 @@ public class ProductServiceImpl implements ProductService {
     @CacheEvict(value = "products", allEntries = true)
     @Transactional(readOnly = true)
     public ProductAdminResponse insertProduct(ProductRequest productRequest) {
-        boolean isExistsName = this.productRepository.existsByName(productRequest.getName());
-        if(isExistsName) throw new ProductAlreadyExistsException(MessageError.INVALID_PRODUCT_DATA.getMessage());
-        Product product = productMapper.toProduct(productRequest);
-        this.productRepository.save(product);
-        return productMapper.toProductAdminResponse(product);
+        try{
+            log.info("Start create product");
+            boolean isExistsName = this.productRepository.existsByName(productRequest.getName());
+            if(isExistsName) throw new ProductAlreadyExistsException(MessageError.INVALID_PRODUCT_DATA.getMessage());
+            Product product = productMapper.toProduct(productRequest);
+            this.productRepository.save(product);
+            return productMapper.toProductAdminResponse(product);
+        }catch (Exception e) {
+            throw  e;
+        } finally {
+            log.info("End create product");
+        }
     }
 
     @Override
