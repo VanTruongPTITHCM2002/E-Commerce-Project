@@ -24,6 +24,6 @@ public class OrderRequest {
     LocalDate createAt;
     LocalDate updateAt;
     @Min(value = 0, message = "total price must equal or greater than 0")
-    BigDecimal totalPrice;
+    int totalPrice;
     String status;
 }
