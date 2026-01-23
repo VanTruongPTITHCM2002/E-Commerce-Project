@@ -19,8 +19,12 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -40,6 +44,7 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, Cache<String, Boolean> tokenBlacklistCache) throws Exception {
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> {})
                 .authorizeHttpRequests(request -> {
                     request.requestMatchers(HttpMethod.POST,publicEndpoints).permitAll()
                             .requestMatchers("/actuator/**").permitAll()
@@ -75,4 +80,18 @@ public class SecurityConfig {
     PasswordEncoder passwordEncoder (){
         return new BCryptPasswordEncoder();
     }
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:5173")); // React app
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true); // Nếu bạn dùng cookie/token
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+
+        return source;
+    }
+
 }
