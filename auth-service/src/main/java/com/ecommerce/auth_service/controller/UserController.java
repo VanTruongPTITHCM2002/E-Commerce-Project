@@ -35,10 +35,14 @@ public class UserController {
     public ResponseEntity<ApiResponse<Page<UserResponse>>> getUsers (
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "5") int size,
-            @RequestParam(name = "sorting", defaultValue = "username") String sorting
+            @RequestParam(name = "sorting", defaultValue = "username") String sorting,
+            @RequestParam(name = "firstName", required = false) String firstName,
+            @RequestParam(name = "lastName", required = false) String lastName,
+            @RequestParam(name = "phoneNumber", required = false) String phoneNumber,
+            @RequestParam(name = "email", required = false) String email
     ){
         Pageable pageable = PageRequest.of(page,size, Sort.by(sorting).descending()); // in frontend must be page + 1;
-        Page<UserResponse> userResponses = this.iUserService.getUsers(pageable);
+        Page<UserResponse> userResponses = this.iUserService.getUsers(pageable, firstName, lastName, phoneNumber, email);
         return ResponseUtils.ok(ResponseMessageSuccess.USERS_LISTED.getMessage(), userResponses);
     }
 
