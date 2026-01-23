@@ -1,8 +1,10 @@
 package com.ecommerce.auth_service.service.impl;
 
+import com.ecommerce.auth_service.common.ResponseMessageFailure;
 import com.ecommerce.auth_service.dto.request.PermissionRequest;
 import com.ecommerce.auth_service.dto.response.PermissionResponse;
 import com.ecommerce.auth_service.entity.Permission;
+import com.ecommerce.auth_service.exception.AppException;
 import com.ecommerce.auth_service.mapper.PermissionMapper;
 import com.ecommerce.auth_service.repository.PermissionRepository;
 import com.ecommerce.auth_service.service.IPermissionService;
@@ -10,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,7 +32,7 @@ public class PermissionServiceImpl implements IPermissionService {
         Permission permission = this.permissionRepository.findByPermissionName(permissionRequest.getPermissionName()).orElse(null);
 
         if(permission != null){
-            throw new RuntimeException("Permission is exists");
+            throw new AppException(HttpStatus.BAD_REQUEST.value(), ResponseMessageFailure.PERMISSION_ALREADY_EXISTS.getMessage());
         }
 
         permission = permissionMapper.toPermission(permissionRequest);
@@ -42,7 +45,7 @@ public class PermissionServiceImpl implements IPermissionService {
     @Override
     public PermissionResponse getPermissionById(int permissionId) {
         Permission permission = this.permissionRepository.findById(permissionId).orElseThrow(
-                () -> new RuntimeException("Permission not found")
+                () -> new AppException(HttpStatus.NOT_FOUND.value(), ResponseMessageFailure.PERMISSION_NOT_FOUND.getMessage())
         );
         return permissionMapper.toResponse(permission);
     }
@@ -58,7 +61,7 @@ public class PermissionServiceImpl implements IPermissionService {
         Permission permission = this.permissionRepository.findById(permissionId).orElse(null);
 
         if(permission == null){
-            throw  new RuntimeException("Not found permission");
+            throw  new AppException(HttpStatus.NOT_FOUND.value(), ResponseMessageFailure.PERMISSION_NOT_FOUND.getMessage());
         }
 
         permissionMapper.update(permission,permissionRequest);
