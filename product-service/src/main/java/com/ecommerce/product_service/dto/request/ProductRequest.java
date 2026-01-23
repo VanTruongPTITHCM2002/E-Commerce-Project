@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Value;
 
 @Data
 @NoArgsConstructor
