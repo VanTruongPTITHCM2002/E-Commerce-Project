@@ -23,7 +23,7 @@ public class OrderItemRequest {
     @Min(value = 0, message = "Quantity must greater than zero")
     int quantity;
     @Min(value = 0, message = "Price must greater than zero")
-    BigDecimal price;
+    int price;
     @Min(value = 0, message = "subTotal must greater than zero")
-    BigDecimal subTotal;
+    int subTotal;
 }
