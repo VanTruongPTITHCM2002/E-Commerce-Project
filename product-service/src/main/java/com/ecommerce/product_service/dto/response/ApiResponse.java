@@ -14,6 +14,4 @@ public class ApiResponse<T> {
     int status;
     String message;
     T data;
-
-
 }
