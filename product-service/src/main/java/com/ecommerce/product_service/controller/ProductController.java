@@ -43,22 +43,13 @@ public class ProductController {
 
     @GetMapping("/admin/products")
     @PreAuthorize(RoleConstants.ROLE_ADMIN)
-    public ResponseEntity<ApiResponse<Page<ProductAdminResponse>>>getProducts(
-            @RequestParam(name = "size", defaultValue = "5") int size,
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "sorting", defaultValue = "name") String sorting,
-            @RequestParam(name = "minPrice", required = false) BigInteger minPrice,
-            @RequestParam(name = "maxPrice", required = false) BigInteger maxPrice,
-            @RequestParam(name = "keyword", required = false) String keyword,
-            @RequestParam(name = "isDeleted", required = false) Boolean isDeleted,
-            @RequestParam(name = "startDate", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(name = "endDate", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    public ResponseEntity<ApiResponse<PageResponse<ProductAdminResponse>>>getProducts(
+            @Filter Specification<Product> specification,
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(name = "filter", defaultValue = "null") String filter
     ){
-        Pageable pageable = PageRequest.of(page, size,  Sort.by(sorting).descending());
-        Page<ProductAdminResponse> productResponsePage = this.productService.getProducts(pageable, minPrice, maxPrice, keyword, isDeleted, startDate, endDate);
-        return ResponseUtils.ok(MessageSuccess.PRODUCT_LIST_RETRIEVED.getMessage(),productResponsePage);
+        PageResponse<ProductAdminResponse> responses = this.productService.getProducts(specification, pageable, filter);
+        return ResponseUtils.ok(MessageSuccess.PRODUCT_LIST_RETRIEVED.getMessage(),responses);
     }
 
     @GetMapping("/products")
