@@ -27,9 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -45,28 +43,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Cacheable("products")
     @Transactional(readOnly = true)
-    public Page<ProductAdminResponse> getProducts(Pageable pageable, BigInteger minPrice, BigInteger maxPrice,
-                                                  String keyWord, Boolean isDeleted, LocalDate startDate, LocalDate endDate) {
-        Specification<Product> specification = Specification.where(null);
-        specification = specification.and(Optional.ofNullable(minPrice)
-                        .map(price -> (Specification<Product>)(root, query, cb) -> cb.greaterThanOrEqualTo(root.get("price"), price))
-                        .orElse(null))
-                .and(Optional.ofNullable(maxPrice)
-                        .map(price -> (Specification<Product>)(root, query, cb) -> cb.lessThanOrEqualTo(root.get("price"), price))
-                        .orElse(null))
-                .and(Optional.ofNullable(keyWord)
-                        .map(name ->(Specification<Product>) (root, query, cb) -> cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%"))
-                        .orElse(null))
-                .and(Optional.ofNullable(isDeleted)
-                        .map(delete -> (Specification<Product>)(root, query, cb)-> cb.equal(root.get("isDeleted"),delete))
-                        .orElse(null))
-                .and(Optional.ofNullable(startDate).map(start -> (Specification<Product>)(root, query, cb) -> cb.greaterThanOrEqualTo(root.get("createAt"), start))
-                        .orElse(null))
-                .and(Optional.ofNullable(endDate).map(end -> (Specification<Product>)(root, query, cb) -> cb.lessThanOrEqualTo(root.get("createAt"), end))
-                        .orElse(null));
-
+    public PageResponse<ProductAdminResponse> getAdminProducts(Specification<Product> specification, Pageable pageable, String filter) {
         Page<Product> products= this.productRepository.findAll(specification, pageable);
-        return products.map(productMapper::toProductAdminResponse);
+        Page<ProductAdminResponse> productAdminResponses =  products.map(productMapper::toProductAdminResponse);
+        return new PageResponse<>(productAdminResponses, "Products for admin", filter);
     }
 
     @Override
