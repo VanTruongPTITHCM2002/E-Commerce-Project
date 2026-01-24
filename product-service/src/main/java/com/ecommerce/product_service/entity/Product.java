@@ -27,9 +27,6 @@ public class Product extends BaseEntity {
     @Column(name = "product_id")
     UUID id;
 
-    @Column(name = "sku", unique = true, length = 64)
-    String sku;
-
     @Column(name = "product_name",nullable = false,length = 100)
     String name;
 
@@ -43,18 +40,6 @@ public class Product extends BaseEntity {
     @CollectionTable(name = "product_image", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "image_url", length =  500)
     List<String> images = new ArrayList<>();
-
-    @Column(name = "price",nullable = false, precision = 15, scale = 2)
-    BigDecimal price;
-
-    @Column(name = "original_price", precision = 15, scale = 2)
-    BigDecimal originalPrice;
-
-    @Column(name = "cost_price", precision = 15, scale = 2)
-    BigDecimal costPrice;
-
-    @Column(name = "quantity", nullable = false, precision = 15, scale = 2)
-    BigDecimal quantity;
 
     @Column(name = "rating")
     BigDecimal rating;
@@ -71,11 +56,11 @@ public class Product extends BaseEntity {
     @Column(name = "is_deleted")
     boolean isDeleted = false;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     Category category;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id")
     Brand brand;
 
