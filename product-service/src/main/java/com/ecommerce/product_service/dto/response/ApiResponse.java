@@ -12,6 +12,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ApiResponse<T> {
     int status;
+    boolean success;
     String message;
     T data;
 }
