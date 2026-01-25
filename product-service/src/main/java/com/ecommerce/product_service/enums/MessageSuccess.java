@@ -1,4 +1,4 @@
-package com.ecommerce.product_service.common;
+package com.ecommerce.product_service.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

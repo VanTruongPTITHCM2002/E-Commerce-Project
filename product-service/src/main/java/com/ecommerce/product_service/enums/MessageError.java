@@ -1,4 +1,4 @@
-package com.ecommerce.product_service.common;
+package com.ecommerce.product_service.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,6 +12,8 @@ public enum MessageError {
     PRODUCT_DELETE_FAILED("Cannot delete product. Product not found."),
     INVALID_PRODUCT_DATA("Invalid product data."),
     INTERNAL_SERVER_ERROR("An unexpected error occurred. Please try again later."),
-    UNAUTHORIZED("Unauthorized access. Please log in.");
+    UNAUTHORIZED("Unauthorized access. Please log in."),
+    METHOD_NOT_FOUND("Method access not found")
+    ;
     private final String message;
 }
