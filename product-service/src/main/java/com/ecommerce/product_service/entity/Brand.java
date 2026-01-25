@@ -24,9 +24,13 @@ public class Brand extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
+    @Column(length = 100, nullable = false)
     String name;
+    @Column(length = 100, nullable = false)
     String slug;
+    @Column(columnDefinition = "TEXT")
     String logoUrl;
+    @Column(columnDefinition = "TEXT")
     String description;
 
     @OneToMany(mappedBy = "brand")
