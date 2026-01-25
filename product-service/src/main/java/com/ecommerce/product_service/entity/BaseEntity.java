@@ -1,5 +1,6 @@
 package com.ecommerce.product_service.entity;
 
+import com.ecommerce.product_service.enums.EntityStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -25,13 +26,15 @@ public abstract class BaseEntity {
     String createdBy;
 
     @Column(name = "updated_by")
-    String updatedBY;
+    String updatedBy;
 
     @Column(name = "deleted_at")
     ZonedDateTime deletedAt;
 
     @Column(name = "deleted_by")
     String deletedBy;
+
+    EntityStatus entityStatus;
 
     @Version
     Long version;
@@ -40,6 +43,7 @@ public abstract class BaseEntity {
     protected void onCreate() {
         createdAt = ZonedDateTime.now();
         updatedAt = ZonedDateTime.now();
+        this.entityStatus = EntityStatus.ACTIVE;
     }
 
     @PreUpdate
