@@ -20,6 +20,7 @@ public class BrandResponse {
     UUID id;
     String name;
     String slug;
+    String code;
     String logoUrl;
     String description;
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
