@@ -11,7 +11,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "brand")
+@Table(name = "brand",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = "code"),
+        @UniqueConstraint(columnNames = "slug")
+    }
+)
 @Getter
 @Setter
 @DynamicInsert
@@ -24,6 +29,8 @@ public class Brand extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
+    @Column(length = 50, unique = true, nullable = false)
+    String code;
     @Column(length = 100, nullable = false)
     String name;
     @Column(length = 100, nullable = false)
