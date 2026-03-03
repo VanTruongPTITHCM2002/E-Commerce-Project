@@ -24,9 +24,13 @@ public class Category extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
+    @Column(length = 100, nullable = false)
     String name;
+    @Column(length = 100, nullable = false)
     String slug;
+    @Column(length = 1000)
     String description;
+    @Column(length = 1000)
     String iconUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
