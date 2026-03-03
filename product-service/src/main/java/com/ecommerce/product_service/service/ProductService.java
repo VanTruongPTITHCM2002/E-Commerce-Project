@@ -23,4 +23,5 @@ public interface ProductService {
     ProductAdminResponse updateProduct(String productId, ProductRequest productRequest);
     boolean updateProductFromCart(String productId, int quantity, boolean isAdd);
     boolean deleteProduct(String productId);
+    Product checkExistsByIdAndReturn(String productId);
  }
