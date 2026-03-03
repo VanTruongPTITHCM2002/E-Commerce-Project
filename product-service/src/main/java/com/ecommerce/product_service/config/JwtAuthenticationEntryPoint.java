@@ -1,7 +1,7 @@
 package com.ecommerce.product_service.config;
 
 
-import com.ecommerce.product_service.common.MessageError;
+import com.ecommerce.product_service.enums.MessageError;
 import com.ecommerce.product_service.dto.response.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
