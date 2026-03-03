@@ -18,6 +18,7 @@ public class ResponseUtils {
         return ResponseEntity.status(HttpStatus.CREATED.value()).body(ApiResponse.<T>builder()
                 .status(HttpStatus.CREATED.value())
                 .message(message)
+                .success(Boolean.TRUE)
                 .data(data)
                 .build());
     }
