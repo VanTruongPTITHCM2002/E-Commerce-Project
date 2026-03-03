@@ -9,6 +9,7 @@ public class ResponseUtils {
         return ResponseEntity.ok().body(ApiResponse.<T>builder()
                 .status(HttpStatus.OK.value())
                 .message(message)
+                .success(Boolean.TRUE)
                 .data(data)
                 .build());
     }
@@ -23,6 +24,7 @@ public class ResponseUtils {
 
     public static <T> ResponseEntity<ApiResponse<T>> notFound (String message){
         return ResponseEntity.status(HttpStatus.NOT_FOUND.value()).body(ApiResponse.<T>builder()
+                .success(Boolean.FALSE)
                 .status(HttpStatus.NOT_FOUND.value())
                 .message(message)
                 .build());
@@ -38,6 +40,7 @@ public class ResponseUtils {
     public static <T> ResponseEntity<ApiResponse<T>> badRequest( T data) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST.value())
                 .body(ApiResponse.<T>builder()
+                        .success(Boolean.FALSE)
                         .status(HttpStatus.BAD_REQUEST.value())
                         .data(data)
                         .build());
