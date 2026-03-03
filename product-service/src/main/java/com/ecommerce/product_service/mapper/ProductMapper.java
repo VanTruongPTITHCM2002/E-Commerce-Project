@@ -5,6 +5,7 @@ import com.ecommerce.product_service.dto.response.ProductAdminResponse;
 import com.ecommerce.product_service.dto.response.ProductResponse;
 import com.ecommerce.product_service.entity.Product;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
@@ -13,6 +14,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 public interface ProductMapper {
 
     ProductResponse toProductResponse(Product product);
+    @Mapping(source = "id", target = "id")
     ProductAdminResponse toProductAdminResponse (Product product);
     Product toProduct (ProductRequest productRequest);
     void updateProduct(@MappingTarget Product product,ProductRequest productRequest);
