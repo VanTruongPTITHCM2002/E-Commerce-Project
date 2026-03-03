@@ -1,11 +1,13 @@
 package com.ecommerce.product_service.dto.request;
 
+import com.ecommerce.product_service.validation.NotEmptyObject;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -13,17 +15,30 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@NotEmptyObject
 public class ProductRequest {
-    @Size(min = 5, message = "Product name must be at least 5 characters")
-    @NotEmpty(message = "Please don't empty product name")
+    @Size(min = 5, max = 100, message = "Product name must be at least 5 characters")
+    @NotEmpty(message = "Product name must ne be empty")
+    @NotBlank(message = "Product name must not be blank")
+    @NotNull(message = "Product name must not be null")
     String name;
-    @Min(value = 0, message = "Price must be equal greater than 0")
-    int price;
-    @Min(value = 0, message = "Cost Price must be equal greater than 0")
-    int costPrice;
+    @NotBlank(message = "Slug must not be blank")
+    String slug;
     String thumbnail;
+    List<String> images;
     @Builder.Default
     double rating = 0.00;
-    @Min(value = 0, message = "Quantity must be equal greater than 0")
-    int quantity;
+    @Size(max = 5000, message = "Description is too long")
+    String description;
+    @Size(max = 1000, message = "Short description is too long")
+    String shortDescription;
+    @NotEmpty(message = "Category id must not be empty")
+    @NotNull(message = "Category id must not be null")
+    String categoryId;
+    @NotEmpty(message = "Brand id must not be empty")
+    @NotNull(message = "Brand id must not be null")
+    String brandId;
+//    @NotEmpty(message = "Product must have at least one variant")
+//    @Valid
+//    List<ProductVariantRequest> variants;
 }
