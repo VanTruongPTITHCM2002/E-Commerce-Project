@@ -1,6 +1,7 @@
 package com.ecommerce.product_service.service.impl;
 
 import com.ecommerce.product_service.dto.request.BrandRequest;
+import com.ecommerce.product_service.dto.request.BrandUpdateRequest;
 import com.ecommerce.product_service.dto.response.BrandResponse;
 import com.ecommerce.product_service.dto.response.PageResponse;
 import com.ecommerce.product_service.entity.Brand;
@@ -21,8 +22,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -37,8 +41,8 @@ public class BrandServiceImpl implements BrandService {
     public BrandResponse createBrand(BrandRequest brandRequest) {
         try {
             log.info("Starting create brand");
-             this.validateBrandName(brandRequest.getName());
-             this.validateBrandSlug(brandRequest.getSlug());
+            this.validateBrandCode(brandRequest.getCode());
+            this.validateBrandSlug(brandRequest.getSlug());
             Brand brand = this.brandMapper.toEntity(brandRequest);
             this.brandRepository.save(brand);
             log.debug("Create brand with id : {}", brand.getId());
@@ -64,6 +68,55 @@ public class BrandServiceImpl implements BrandService {
                 .filter(b-> EntityStatus.ACTIVE.equals(b.getEntityStatus()))
                 .orElseThrow(() -> new NotFoundException("Brand not found"));
         return this.brandMapper.toResponse(brand);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<UUID, String> getSlugs(String slug) {
+        List<Brand> brands = this.brandRepository.findBySlugIgnoreCase(slug)
+                .stream()
+                .filter(
+                        brand -> EntityStatus.ACTIVE.equals(brand.getEntityStatus())
+                ).toList();
+       return brands.stream().collect(
+                Collectors.toMap(
+                        Brand::getId,
+                        Brand::getSlug
+                )
+       );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BrandResponse getByCodes(String code) {
+        Brand brand = this.brandRepository.findByCode(code)
+                .filter(
+                        br -> EntityStatus.ACTIVE.equals(br.getEntityStatus())
+                ).orElseThrow(
+                        () -> new NotFoundException("Brand not found")
+                );
+        return this.brandMapper.toResponse(brand);
+    }
+
+    @Override
+    public BrandResponse updateBrand(String id, BrandUpdateRequest brandUpdateRequest) {
+       try {
+           log.info("Starting update brand");
+           this.validateBrandSlug(brandUpdateRequest.getSlug());
+           Brand brand = this.brandRepository.findById(UUID.fromString(id))
+                   .filter(br -> EntityStatus.ACTIVE.equals(br.getEntityStatus()))
+                   .orElseThrow(
+                           () -> new NotFoundException("Brand not found")
+                   );
+
+           this.brandMapper.toUpdate(brand, brandUpdateRequest);
+           log.debug("Brand update with id : {}", brand.getId());
+           this.brandRepository.save(brand);
+           log.info("Brand update successfully with id: {}", brand.getId());
+           return this.brandMapper.toResponse(brand);
+       }finally {
+           log.info("Ending update brand");
+       }
     }
 
     @Override
@@ -104,11 +157,11 @@ public class BrandServiceImpl implements BrandService {
         return brands.stream().map(this.brandMapper::toResponse).toList();
     }
 
-    private void validateBrandName (String  name) {
-        boolean isExistsName = this.brandRepository.existsByName(name);
+    private void validateBrandCode (String code) {
+        boolean isExistsCode = this.brandRepository.existsByCode(code);
 
-        if (isExistsName) {
-            throw new BadRequestException("Brand name was exists in program");
+        if (isExistsCode) {
+            throw new BadRequestException("Brand code was exists in program");
         }
     }
 
