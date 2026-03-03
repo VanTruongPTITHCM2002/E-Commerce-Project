@@ -36,7 +36,6 @@ public class BrandController {
     BrandService brandService;
 
     @GetMapping
-//    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<ApiResponse<PageResponse<BrandResponse>>> getBrandsPaginate (
             @Filter Specification<Brand> specification,
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
