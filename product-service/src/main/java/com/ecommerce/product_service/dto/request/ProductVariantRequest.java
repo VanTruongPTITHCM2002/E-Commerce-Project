@@ -32,7 +32,6 @@ public class ProductVariantRequest {
     private String productId;
 
     @NotNull(message = "Price must not be null")
-    @NotEmpty(message = "Price must not be empty")
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
     private BigDecimal price;
 
