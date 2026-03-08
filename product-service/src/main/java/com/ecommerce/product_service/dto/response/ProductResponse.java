@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -11,7 +13,9 @@ import lombok.experimental.FieldDefaults;
 public class ProductResponse {
     String id;
     String name;
-    int price;
+    String slug;
     String thumbnail;
-    double rating;
+    String description;
+    String shortDescription;
+    List<String> images;
 }
