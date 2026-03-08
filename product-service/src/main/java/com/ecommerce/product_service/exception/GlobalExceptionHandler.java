@@ -7,6 +7,7 @@ import com.ecommerce.product_service.utils.ResponseUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -23,6 +24,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ApiResponse<String>> handleNoResourceFoundException (NoResourceFoundException noResourceFoundException){
         return ResponseUtils.notFound(MessageError.METHOD_NOT_FOUND.getMessage());
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ApiResponse<String>> handleAuthorizationDeniedException (AuthorizationDeniedException authorizationDeniedException){
+        return ResponseUtils.unknown(HttpStatus.UNAUTHORIZED.value(), MessageError.UNAUTHORIZED.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -93,4 +99,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<String>> handleBadRequestException (BadRequestException badRequestException) {
         return ResponseUtils.badRequest(badRequestException.getMessage());
     }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiResponse<String>> handleConflictException (ConflictException conflictException) {
+        return ResponseUtils.unknown(HttpStatus.CONFLICT.value(), conflictException.getMessage());
+    }
+
+
 }
