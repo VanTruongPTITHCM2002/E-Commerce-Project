@@ -14,7 +14,8 @@ public enum MessageError {
     INTERNAL_SERVER_ERROR("An unexpected error occurred. Please try again later."),
     UNAUTHORIZED("Unauthorized access. Please log in."),
     METHOD_NOT_FOUND("Method access not found"),
-    STATUS_TRANSITION_ERROR("Cannot transition status")
+    STATUS_TRANSITION_ERROR("Cannot transition status"),
+    CATEGORY_SLUG_EXISTED("Category slug already exists"),
     ;
     private final String message;
 }
