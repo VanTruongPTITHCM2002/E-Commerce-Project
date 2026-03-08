@@ -22,6 +22,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/product-variants")
 @Slf4j
@@ -50,6 +52,12 @@ public class ProductVariantController {
     public ResponseEntity<ApiResponse<ProductVariantResponse>> getProductVariantById (@PathVariable("id") String id) {
         ProductVariantResponse response = this.productVariantService.getProductVariantById(id);
         return ResponseUtils.ok("Product variant retrieved successfully", response);
+    }
+
+    @GetMapping("/product/{productId}")
+    public ResponseEntity<ApiResponse<List<ProductVariantResponse>>> getProductVariantByProductId (@PathVariable("productId") String productId) {
+        List<ProductVariantResponse> response = this.productVariantService.getProductVariantByProductId(productId);
+        return ResponseUtils.ok("Product variants list retrieved with " + productId +" successfully", response);
     }
 
     @PutMapping("/{id}")
