@@ -14,6 +14,7 @@ public enum MessageSuccess {
     PRODUCT_DELETED_BULK_SUCCESSFULLY("Product deleted bulk successfully."),
     PRODUCT_RETRIEVED_SUCCESSFULLY("Product retrieved successfully."),
     PRODUCT_LIST_RETRIEVED("Product list retrieved successfully."),
+    CATEGORY_CREATED_SUCCESSFULLY("Category created successfully."),
     STATUS_TRASITION_SUCCESSFULLY("Status transition successfully."),
     BRAND_LIST_RETRIEVED("Brand list retrieved successfully"),
     BRAND_CREATED_SUCCESSFULLY("Brand created successfully"),
