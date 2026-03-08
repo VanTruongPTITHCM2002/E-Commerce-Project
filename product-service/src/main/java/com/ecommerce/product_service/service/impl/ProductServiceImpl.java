@@ -1,9 +1,9 @@
 package com.ecommerce.product_service.service.impl;
 
-import com.ecommerce.product_service.dto.request.ProductVariantRequest;
+import com.ecommerce.product_service.dto.request.ProductUpdateRequest;
+import com.ecommerce.product_service.dto.request.ProductUpdateStatusRequest;
 import com.ecommerce.product_service.entity.Brand;
 import com.ecommerce.product_service.entity.Category;
-import com.ecommerce.product_service.entity.ProductVariant;
 import com.ecommerce.product_service.enums.EntityStatus;
 import com.ecommerce.product_service.enums.MessageError;
 import com.ecommerce.product_service.dto.request.ProductRequest;
@@ -11,15 +11,14 @@ import com.ecommerce.product_service.dto.response.PageResponse;
 import com.ecommerce.product_service.dto.response.ProductAdminResponse;
 import com.ecommerce.product_service.dto.response.ProductResponse;
 import com.ecommerce.product_service.entity.Product;
-import com.ecommerce.product_service.exception.ConflictException;
 import com.ecommerce.product_service.exception.NotFoundException;
 import com.ecommerce.product_service.exception.ProductAlreadyExistsException;
 import com.ecommerce.product_service.exception.ProductNotFoundException;
+import com.ecommerce.product_service.exception.UnprocessableEntityException;
 import com.ecommerce.product_service.mapper.ProductMapper;
-import com.ecommerce.product_service.repository.BrandRepository;
-import com.ecommerce.product_service.repository.CategoryRepository;
 import com.ecommerce.product_service.repository.ProductRepository;
-import com.ecommerce.product_service.repository.ProductVariantRepository;
+import com.ecommerce.product_service.service.BrandService;
+import com.ecommerce.product_service.service.CategoryService;
 import com.ecommerce.product_service.service.ProductService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -35,13 +34,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -50,11 +44,9 @@ import java.util.UUID;
 public class ProductServiceImpl implements ProductService {
 
     ProductRepository productRepository;
-    CategoryRepository categoryRepository;
-    BrandRepository brandRepository;
-    ProductVariantRepository productVariantRepository;
+    CategoryService categoryService;
+    BrandService brandService;
     ProductMapper productMapper;
-
 
     @Override
     @Cacheable("products")
@@ -72,39 +64,69 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public PageResponse<ProductAdminResponse> getProducts(Specification<Product> specification, Pageable pageable, String filter) {
-        log.info("Start get products by paginate and filter");
-        try {
-            Page<Product> productPage = this.productRepository.findAll(specification, pageable);
-
-            Page<ProductAdminResponse> adminResponseList = productPage.map(
-                    this.productMapper::toProductAdminResponse);
-
-            return new PageResponse<>(adminResponseList, "Products", filter);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            log.info("End get products by paginate and filter");
+    @Transactional
+    public void createProductBulk(List<ProductRequest> productRequests) {
+        List<Product> products = new ArrayList<>();
+        for (ProductRequest productRequest: productRequests) {
+            this.validateExistsByName(productRequest.getName());
+            Category category = this.categoryService.validateCategory(productRequest.getCategoryId());
+            Brand brand = this.brandService.validateBrand(productRequest.getBrandId());
+            Product product = productMapper.toProduct(productRequest);
+            product.setCategory(category);
+            product.setBrand(brand);
+            products.add(product);
         }
+        this.productRepository.saveAll(products);
+    }
+
+    @Override
+    @Transactional
+    public void deleteProductBulk(List<String> productIds) {
+        List<UUID> uuids = productIds.stream().map(UUID::fromString).toList();
+        List<Product> products = new ArrayList<>();
+        for (UUID uuid : uuids) {
+            Product product = this.validateProductId(uuid);
+            product.setUpdatedAt(ZonedDateTime.now());
+            product.setUpdatedBy("system");
+            product.setDeleted(true);
+            product.setDeletedAt(ZonedDateTime.now());
+            product.setEntityStatus(EntityStatus.DELETED);
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            product.setDeletedBy(username);
+            products.add(product);
+        }
+        this.productRepository.saveAll(products);
+    }
+
+    @Override
+    @Transactional
+    public void updateProductBulk(Map<String, ProductUpdateRequest> productUpdateRequestMap) {
+        List<Product> products = new ArrayList<>();
+        for (Map.Entry<String, ProductUpdateRequest> entry: productUpdateRequestMap.entrySet()) {
+            Product product = this.validateProductId(UUID.fromString(entry.getKey()));
+            productMapper.updateProduct(product, entry.getValue());
+            product.setUpdatedAt(ZonedDateTime.now());
+            product.setUpdatedBy("system");
+            products.add(product);
+        }
+        this.productRepository.saveAll(products);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ProductResponse> getPublishProduct(Pageable pageable, BigInteger minPrice, BigInteger maxPrice, String keyword) {
-        Specification<Product> specification = Specification.where((root, query, cb) -> cb.isFalse(root.get("isDeleted")));
-
-        specification = specification.and(Optional.ofNullable(minPrice)
-                        .map(price -> (Specification<Product>)(root, query, cb) -> cb.greaterThanOrEqualTo(root.get("price"), price))
-                        .orElse(null)
-                ).and(Optional.ofNullable(maxPrice)
-                        .map(price -> (Specification<Product>)(root, query, cb) -> cb.lessThanOrEqualTo(root.get("price"), price))
-                        .orElse(null))
-                .and(Optional.ofNullable(keyword).map(name ->(Specification<Product>) (root, query, cb) -> cb.like(
-                        cb.lower(root.get("name")), "%" + name.toLowerCase() + "%")).orElse(null)
-                );
-        Page<Product> products = this.productRepository.findAll(specification, pageable);
-        return products.map(productMapper::toProductResponse);
+    public PageResponse<ProductResponse> getProducts(Specification<Product> specification, Pageable pageable, String filter) {
+        log.info("Starting get products by paginating and filtering...");
+        try {
+            specification = specification.and(
+                    (root, query, cb)
+                    -> root.get("entityStatus").in(EntityStatus.ACTIVE));
+            Page<Product> productPage = this.productRepository.findAll(specification, pageable);
+            Page<ProductResponse> productResponses = productPage.map(
+                    this.productMapper::toProductResponse);
+            return new PageResponse<>(productResponses, "Products resource", filter);
+        } finally {
+            log.info("End get products by paginating and filtering...");
+        }
     }
 
     @Override
@@ -114,16 +136,11 @@ public class ProductServiceImpl implements ProductService {
         try{
             log.info("Start create product");
             this.validateExistsByName(productRequest.getName());
-            Category category = this.validateCategory(productRequest.getCategoryId());
-            Brand brand = this.validateBrand(productRequest.getBrandId());
+            Category category = this.categoryService.validateCategory(productRequest.getCategoryId());
+            Brand brand = this.brandService.validateBrand(productRequest.getBrandId());
             Product product = productMapper.toProduct(productRequest);
             product.setCategory(category);
             product.setBrand(brand);
-            List<ProductVariant> variantList = new ArrayList<>();
-//            for (ProductVariantRequest variantRequest: productRequest.getVariants()) {
-//                ProductVariant productVariant = new ProductVariant();
-//                productVariant.setProduct(product);
-//            }
             this.productRepository.save(product);
             log.info("Created product successfully with id: {}", product.getId());
             return productMapper.toProductAdminResponse(product);
@@ -137,22 +154,6 @@ public class ProductServiceImpl implements ProductService {
         if(isExistsName) {
             throw new ProductAlreadyExistsException(MessageError.INVALID_PRODUCT_DATA.getMessage());
         }
-    }
-
-    private Category validateCategory (String categoryId) {
-        return this.categoryRepository.findById(
-                UUID.fromString(categoryId)
-        ).orElseThrow(
-                () -> new NotFoundException("Category not found")
-        );
-    }
-
-    private Brand validateBrand (String brandId) {
-        return this.brandRepository.findById(
-                UUID.fromString(brandId)
-        ).orElseThrow(
-                () -> new NotFoundException("Brand not found")
-        );
     }
 
     @Override
@@ -177,10 +178,9 @@ public class ProductServiceImpl implements ProductService {
             @CacheEvict(value = "products", allEntries = true)
     })
     @Transactional
-    public ProductAdminResponse updateProduct(String productId, ProductRequest productRequest) {
-        Product product = this.productRepository.findById(UUID.fromString(productId))
-                .orElseThrow(() -> new ProductNotFoundException(MessageError.PRODUCT_NOT_FOUND.getMessage()));
-        productMapper.updateProduct(product,productRequest);
+    public ProductAdminResponse updateProduct(String productId, ProductUpdateRequest updateRequest) {
+        Product product = this.validateProductId(UUID.fromString(productId));
+        productMapper.updateProduct(product, updateRequest);
         this.productRepository.save(product);
         return productMapper.toProductAdminResponse(product);
     }
@@ -205,10 +205,12 @@ public class ProductServiceImpl implements ProductService {
     })
     @Transactional
     public boolean deleteProduct(String productId) {
-        Product product = this.productRepository.findById(UUID.fromString(productId))
-                . orElseThrow(() -> new ProductNotFoundException(MessageError.PRODUCT_NOT_FOUND.getMessage()));
+        Product product = this.validateProductId(UUID.fromString(productId));
+        product.setUpdatedAt(ZonedDateTime.now());
+        product.setUpdatedBy("system");
         product.setDeleted(true);
         product.setDeletedAt(ZonedDateTime.now());
+        product.setEntityStatus(EntityStatus.DELETED);
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         product.setDeletedBy(username);
         this.productRepository.save(product);
@@ -219,6 +221,40 @@ public class ProductServiceImpl implements ProductService {
     public Product checkExistsByIdAndReturn(String productId) {
         UUID id = UUID.fromString(productId);
         return this.validateProductId(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getProductsByCategoryId(UUID categoryId) {
+        List<Product> products = this.productRepository.getProductsWithCategory(categoryId);
+
+        if (products.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return products.stream().map(
+                product -> ProductResponse.builder()
+                        .id(product.getId().toString())
+                        .name(product.getName())
+                        .build()
+        ).toList();
+    }
+
+    @Override
+    @Transactional
+    public void changeStatus(ProductUpdateStatusRequest productUpdateStatusRequest) {
+            UUID id = UUID.fromString(productUpdateStatusRequest.getId());
+            Product product = this.validateProductId(id);
+            EntityStatus entityStatus = EntityStatus.valueOf(productUpdateStatusRequest.getStatus());
+            if (!product.getEntityStatus().canTransitionTo(entityStatus)) {
+                throw new UnprocessableEntityException(MessageError.STATUS_TRANSITION_ERROR.getMessage());
+            }
+
+            product.setEntityStatus(entityStatus);
+            product.setUpdatedAt(ZonedDateTime.now());
+            product.setUpdatedBy("system");
+
+            this.productRepository.save(product);
     }
 
     private Product validateProductId (UUID id) {
