@@ -202,4 +202,33 @@ public class CategoryServiceImpl implements CategoryService {
             }
         }
     }
+
+    @Override
+    public Category validateCategory (String categoryId) {
+        return this.categoryRepository.findById(
+                UUID.fromString(categoryId)
+        ).orElseThrow(
+                () -> new NotFoundException("Category not found")
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> getRoot() {
+        Specification<Category>specification =(((root, query, criteriaBuilder) ->
+                root.get("entityStatus").in(
+                        List.of(EntityStatus.ACTIVE)
+                )
+        ));
+        List<Category> categories = this.categoryRepository.findAll(specification);
+        return categories.stream()
+                .filter(category -> category.getParent() == null)
+                .map(
+                category -> CategoryResponse
+                        .builder()
+                        .id(category.getId())
+                        .name(category.getName())
+                        .build()
+        ).toList();
+    }
 }
