@@ -7,10 +7,14 @@ import lombok.Getter;
 @Getter
 public enum MessageSuccess {
     PRODUCT_CREATED_SUCCESSFULLY("Product created successfully."),
+    PRODUCT_CREATED_BULK_SUCCESSFULLY("Product created bulk successfully."),
     PRODUCT_UPDATED_SUCCESSFULLY("Product updated successfully."),
+    PRODUCT_UPDATED_BULK_FAILURE("Product updated bulk failure."),
     PRODUCT_DELETED_SUCCESSFULLY("Product deleted successfully."),
+    PRODUCT_DELETED_BULK_SUCCESSFULLY("Product deleted bulk successfully."),
     PRODUCT_RETRIEVED_SUCCESSFULLY("Product retrieved successfully."),
     PRODUCT_LIST_RETRIEVED("Product list retrieved successfully."),
+    STATUS_TRASITION_SUCCESSFULLY("Status transition successfully."),
     BRAND_LIST_RETRIEVED("Brand list retrieved successfully"),
     BRAND_CREATED_SUCCESSFULLY("Brand created successfully"),
     BRAND_UPDATED_SUCCESSFULLY("Brand updated successfully"),
