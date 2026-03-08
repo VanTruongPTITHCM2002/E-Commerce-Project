@@ -90,6 +90,15 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     }
 
     @Override
+    public List<ProductVariantResponse> getProductVariantByProductId(String productId) {
+        Product product = this.productService.checkExistsByIdAndReturn(productId);
+        List<ProductVariant> productVariants = this.productVariantRepository.findByProduct(UUID.fromString(productId));
+        return productVariants.stream().map(
+                this.productVariantMapper::toResponse
+        ).toList();
+    }
+
+    @Override
     @Transactional
     public void deleteProductVariant(String productVariantId) {
         UUID id = UUID.fromString(productVariantId);
