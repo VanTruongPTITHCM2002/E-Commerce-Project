@@ -1,6 +1,7 @@
 package com.ecommerce.product_service.mapper;
 
 import com.ecommerce.product_service.dto.request.ProductRequest;
+import com.ecommerce.product_service.dto.request.ProductUpdateRequest;
 import com.ecommerce.product_service.dto.response.ProductAdminResponse;
 import com.ecommerce.product_service.dto.response.ProductResponse;
 import com.ecommerce.product_service.entity.Product;
@@ -17,5 +18,5 @@ public interface ProductMapper {
     @Mapping(source = "id", target = "id")
     ProductAdminResponse toProductAdminResponse (Product product);
     Product toProduct (ProductRequest productRequest);
-    void updateProduct(@MappingTarget Product product,ProductRequest productRequest);
+    void updateProduct(@MappingTarget Product product, ProductUpdateRequest updateRequest);
 }
