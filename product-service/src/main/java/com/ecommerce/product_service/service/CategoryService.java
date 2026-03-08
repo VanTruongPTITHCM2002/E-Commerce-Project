@@ -20,4 +20,6 @@ public interface CategoryService {
     CategoryTreeResponse viewTreeCategory (String id);
     List<CategoryTreeResponse> viewTreeCategories ();
     void deleteCategory (String id);
+    Category validateCategory (String categoryId);
+    List<CategoryResponse> getRoot();
 }
