@@ -63,6 +63,12 @@ public class CategoryController {
         return ResponseUtils.ok("Get view trees categories successfully", responses);
     }
 
+    @GetMapping("/root")
+    public ResponseEntity<ApiResponse<List<CategoryResponse>>> getRoot() {
+        List<CategoryResponse> categoryResponses = this.categoryService.getRoot();
+        return ResponseUtils.ok("Get root category successfully", categoryResponses);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CategoryResponse>> updateCategory (
             @PathVariable("id") String id,
