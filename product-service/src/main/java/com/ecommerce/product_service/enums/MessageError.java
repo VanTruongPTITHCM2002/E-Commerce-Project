@@ -13,7 +13,8 @@ public enum MessageError {
     INVALID_PRODUCT_DATA("Invalid product data."),
     INTERNAL_SERVER_ERROR("An unexpected error occurred. Please try again later."),
     UNAUTHORIZED("Unauthorized access. Please log in."),
-    METHOD_NOT_FOUND("Method access not found")
+    METHOD_NOT_FOUND("Method access not found"),
+    STATUS_TRANSITION_ERROR("Cannot transition status")
     ;
     private final String message;
 }
