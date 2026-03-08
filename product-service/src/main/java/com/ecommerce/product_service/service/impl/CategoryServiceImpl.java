@@ -9,6 +9,7 @@ import com.ecommerce.product_service.dto.response.CategoryTreeResponse;
 import com.ecommerce.product_service.dto.response.PageResponse;
 import com.ecommerce.product_service.entity.Category;
 import com.ecommerce.product_service.enums.EntityStatus;
+import com.ecommerce.product_service.enums.MessageError;
 import com.ecommerce.product_service.exception.ConflictException;
 import com.ecommerce.product_service.exception.NotFoundException;
 import com.ecommerce.product_service.mapper.CategoryMapper;
@@ -126,8 +127,11 @@ public class CategoryServiceImpl implements CategoryService {
         List<Category> categories = this.categoryRepository.findAll()
                 .stream()
                 .filter(
-                        c -> EntityStatus.ACTIVE.equals(c.getEntityStatus())
-                ).toList();
+                        c ->
+                                EntityStatus.ACTIVE.equals(c.getEntityStatus())
+                            &&  c.getParent() == null
+                )
+                .toList();
 
         return this.categoryMapper.toViewListTree(categories);
     }
@@ -158,7 +162,7 @@ public class CategoryServiceImpl implements CategoryService {
         boolean isExistsSlug = this.categoryRepository.existsBySlug(slug);
 
         if (isExistsSlug) {
-            throw new ConflictException("Slug was existed");
+            throw new ConflictException(MessageError.CATEGORY_SLUG_EXISTED.getMessage());
         }
     }
 
