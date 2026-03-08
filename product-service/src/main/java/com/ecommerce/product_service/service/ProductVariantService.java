@@ -8,6 +8,8 @@ import com.ecommerce.product_service.entity.ProductVariant;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.List;
+
 public interface ProductVariantService {
     ProductVariantResponse createProductVariant (ProductVariantRequest productVariantRequest);
     PageResponse<ProductVariantResponse> getProductVariants (
@@ -17,5 +19,6 @@ public interface ProductVariantService {
     );
     ProductVariantResponse getProductVariantById (String productVariantId);
     ProductVariantResponse updateProductVariant (String productVariantId, ProductVariantUpdateRequest updateRequest);
+    List<ProductVariantResponse> getProductVariantByProductId (String productId);
     void deleteProductVariant (String productVariantId);
 }
