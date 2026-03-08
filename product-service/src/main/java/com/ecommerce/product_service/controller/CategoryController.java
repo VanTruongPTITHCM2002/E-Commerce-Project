@@ -1,9 +1,11 @@
 package com.ecommerce.product_service.controller;
 
+import com.ecommerce.product_service.constants.RoleConstants;
 import com.ecommerce.product_service.dto.request.CategoryRequest;
 import com.ecommerce.product_service.dto.request.CategoryUpdateRequest;
 import com.ecommerce.product_service.dto.response.*;
 import com.ecommerce.product_service.entity.Category;
+import com.ecommerce.product_service.enums.MessageSuccess;
 import com.ecommerce.product_service.service.CategoryService;
 import com.ecommerce.product_service.utils.ResponseUtils;
 import com.turkraft.springfilter.boot.Filter;
@@ -17,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,12 +33,14 @@ public class CategoryController {
     CategoryService categoryService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<CategoryResponse>> createCategory (@RequestBody CategoryRequest categoryRequest) {
+//    @PreAuthorize(RoleConstants.ROLE_ADMIN)
+    public ResponseEntity<ApiResponse<CategoryResponse>> createCategory (@RequestBody @Valid CategoryRequest categoryRequest) {
         CategoryResponse response = this.categoryService.createCategory(categoryRequest);
-        return ResponseUtils.create("Create category successfully", response);
+        return ResponseUtils.create(MessageSuccess.CATEGORY_CREATED_SUCCESSFULLY.getMessage(), response);
     }
 
     @GetMapping
+//    @PreAuthorize(RoleConstants.ROLE_ADMIN)
     public ResponseEntity<ApiResponse<PageResponse<CategoryResponse>>> getCategoriesPaginate (
             @Filter Specification<Category> specification,
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
@@ -70,6 +75,7 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize(RoleConstants.ROLE_ADMIN)
     public ResponseEntity<ApiResponse<CategoryResponse>> updateCategory (
             @PathVariable("id") String id,
             @RequestBody @Valid CategoryUpdateRequest updateRequest) {
@@ -78,6 +84,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize(RoleConstants.ROLE_ADMIN)
     public ResponseEntity<ApiResponse<Void>> deleteCategory (@PathVariable("id") String id) {
         this.categoryService.deleteCategory(id);
         return ResponseUtils.ok("Deleted category successfully", null);
