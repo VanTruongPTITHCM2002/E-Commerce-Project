@@ -47,31 +47,31 @@ public class CategoryController {
             @RequestParam(value = "filter", required = false) String filter
             ) {
         PageResponse<CategoryResponse> responses = this.categoryService.getCategories(specification, pageable, filter);
-        return  ResponseUtils.ok("Get Category paginate successfully", responses);
+        return  ResponseUtils.ok(MessageSuccess.CATEGORY_LIST_RETRIEVED.getMessage(), responses);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CategoryDetailResponse>> getDetail (@PathVariable("id") String id) {
         CategoryDetailResponse categoryDetailResponse = this.categoryService.getCategoryById(id);
-        return ResponseUtils.ok("Get Category by " + id + " successfully", categoryDetailResponse);
+        return ResponseUtils.ok(MessageSuccess.CATEGORY_RETRIEVED_SUCCESSFULLY.getMessage(), categoryDetailResponse);
     }
 
     @GetMapping("/{id}/tree")
     public ResponseEntity<ApiResponse<CategoryTreeResponse>> getViewTree (@PathVariable("id") String id) {
         CategoryTreeResponse categoryTreeResponse = this.categoryService.viewTreeCategory(id);
-        return  ResponseUtils.ok("Get Category view tree successfully", categoryTreeResponse);
+        return  ResponseUtils.ok(MessageSuccess.CATEGORY_VIEW_TREE_SUCCESSFULLY.getMessage(), categoryTreeResponse);
     }
 
     @GetMapping("/trees")
     public ResponseEntity<ApiResponse<List<CategoryTreeResponse>>> getTrees () {
         List<CategoryTreeResponse> responses = this.categoryService.viewTreeCategories();
-        return ResponseUtils.ok("Get view trees categories successfully", responses);
+        return ResponseUtils.ok(MessageSuccess.CATEGORY_VIEW_TREES_SUCCESSFULLY.getMessage(), responses);
     }
 
     @GetMapping("/root")
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> getRoot() {
         List<CategoryResponse> categoryResponses = this.categoryService.getRoot();
-        return ResponseUtils.ok("Get root category successfully", categoryResponses);
+        return ResponseUtils.ok(MessageSuccess.CATEGORY_VIEW_ROOT_SUCCESSFULLY.getMessage(), categoryResponses);
     }
 
     @PutMapping("/{id}")
@@ -80,13 +80,13 @@ public class CategoryController {
             @PathVariable("id") String id,
             @RequestBody @Valid CategoryUpdateRequest updateRequest) {
         CategoryResponse response = this.categoryService.updateCategory(id, updateRequest);
-        return ResponseUtils.ok("Updated category successfully", response);
+        return ResponseUtils.ok(MessageSuccess.CATEGORY_UPDATED_SUCCESSFULLY.getMessage(), response);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize(RoleConstants.ROLE_ADMIN)
     public ResponseEntity<ApiResponse<Void>> deleteCategory (@PathVariable("id") String id) {
         this.categoryService.deleteCategory(id);
-        return ResponseUtils.ok("Deleted category successfully", null);
+        return ResponseUtils.ok(MessageSuccess.CATEGORY_DELETED_SUCCESSFULLY.getMessage(), null);
     }
 }
