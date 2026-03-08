@@ -172,4 +172,13 @@ public class BrandServiceImpl implements BrandService {
             throw new BadRequestException("Brand slug was exists in program");
         }
     }
+
+    @Override
+    public Brand validateBrand (String brandId) {
+        return this.brandRepository.findById(
+                UUID.fromString(brandId)
+        ).orElseThrow(
+                () -> new NotFoundException("Brand not found")
+        );
+    }
 }
