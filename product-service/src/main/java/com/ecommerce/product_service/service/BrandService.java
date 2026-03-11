@@ -23,4 +23,7 @@ public interface BrandService {
     void deleteBrand (String id);
     List<BrandResponse> selectBrandInfinity ();
     Brand validateBrand (String brandId);
+    void createBulkBrand(List<BrandRequest> requestList);
+    void updateBulkBrand(Map<String, BrandUpdateRequest> map);
+    void deleteBulkBrand(List<String> brandIds);
 }
