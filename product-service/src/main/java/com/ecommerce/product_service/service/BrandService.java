@@ -26,4 +26,5 @@ public interface BrandService {
     void createBulkBrand(List<BrandRequest> requestList);
     void updateBulkBrand(Map<String, BrandUpdateRequest> map);
     void deleteBulkBrand(List<String> brandIds);
+    void changeStatus (String id, String status);
 }
