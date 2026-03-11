@@ -152,6 +152,6 @@ public class ProductController {
     @PutMapping("/admin/change-status")
     public ResponseEntity<ApiResponse<Void>> changeStatusProduct (@RequestBody ProductUpdateStatusRequest productUpdateStatusRequest) {
         this.productService.changeStatus(productUpdateStatusRequest);
-        return ResponseUtils.ok(MessageSuccess.STATUS_TRASITION_SUCCESSFULLY.getMessage(), null);
+        return ResponseUtils.ok(MessageSuccess.STATUS_TRANSITION_SUCCESSFULLY.getMessage(), null);
     }
 }
