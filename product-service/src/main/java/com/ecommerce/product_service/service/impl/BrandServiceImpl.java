@@ -6,8 +6,11 @@ import com.ecommerce.product_service.dto.response.BrandResponse;
 import com.ecommerce.product_service.dto.response.PageResponse;
 import com.ecommerce.product_service.entity.Brand;
 import com.ecommerce.product_service.enums.EntityStatus;
+import com.ecommerce.product_service.enums.MessageError;
 import com.ecommerce.product_service.exception.BadRequestException;
+import com.ecommerce.product_service.exception.ConflictException;
 import com.ecommerce.product_service.exception.NotFoundException;
+import com.ecommerce.product_service.exception.UnprocessableEntityException;
 import com.ecommerce.product_service.mapper.BrandMapper;
 import com.ecommerce.product_service.repository.BrandRepository;
 import com.ecommerce.product_service.service.BrandService;
@@ -22,10 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -66,7 +66,7 @@ public class BrandServiceImpl implements BrandService {
     public BrandResponse getBrandById(String id) {
         Brand brand = this.brandRepository.findById(UUID.fromString(id))
                 .filter(b-> EntityStatus.ACTIVE.equals(b.getEntityStatus()))
-                .orElseThrow(() -> new NotFoundException("Brand not found"));
+                .orElseThrow(() -> new NotFoundException(MessageError.BRAND_NOT_FOUND.getMessage()));
         return this.brandMapper.toResponse(brand);
     }
 
@@ -125,9 +125,9 @@ public class BrandServiceImpl implements BrandService {
         try {
             log.info("Starting delete brand");
             Brand brand = this.brandRepository.findById(UUID.fromString(id))
-                    .orElseThrow(() -> new NotFoundException("Brand not found"));
+                    .orElseThrow(() -> new NotFoundException(MessageError.BRAND_NOT_FOUND.getMessage()));
             if (EntityStatus.INACTIVE.equals(brand.getEntityStatus()) || !brand.getProducts().isEmpty()) {
-                throw new BadRequestException("Couldn't delete brand");
+                throw new BadRequestException(MessageError.BRAND_DELETE_FAILED.getMessage());
             }
 
             brand.setEntityStatus(EntityStatus.INACTIVE);
@@ -161,7 +161,7 @@ public class BrandServiceImpl implements BrandService {
         boolean isExistsCode = this.brandRepository.existsByCode(code);
 
         if (isExistsCode) {
-            throw new BadRequestException("Brand code was exists in program");
+            throw new ConflictException(MessageError.BRAND_CODE_EXISTED.getMessage());
         }
     }
 
@@ -169,7 +169,7 @@ public class BrandServiceImpl implements BrandService {
         boolean isExistsSlug = this.brandRepository.existsBySlug(slug);
 
         if (isExistsSlug) {
-            throw new BadRequestException("Brand slug was exists in program");
+            throw new ConflictException(MessageError.BRAND_SLUG_EXISTED.getMessage());
         }
     }
 
@@ -178,7 +178,71 @@ public class BrandServiceImpl implements BrandService {
         return this.brandRepository.findById(
                 UUID.fromString(brandId)
         ).orElseThrow(
-                () -> new NotFoundException("Brand not found")
+                () -> new NotFoundException(MessageError.BRAND_NOT_FOUND.getMessage())
         );
+    }
+
+    @Override
+    @Transactional
+    public void createBulkBrand(List<BrandRequest> requestList) {
+
+        List<Brand> brands = new ArrayList<>();
+        for (BrandRequest request: requestList) {
+            this.validateBrandCode(request.getCode());
+            this.validateBrandSlug(request.getSlug());
+            Brand brand = this.brandMapper.toEntity(request);
+            brands.add(brand);
+        }
+
+        this.brandRepository.saveAll(brands);
+    }
+
+    @Override
+    @Transactional
+    public void updateBulkBrand(Map<String, BrandUpdateRequest> map) {
+        List<Brand> brands = new ArrayList<>();
+        for (Map.Entry<String, BrandUpdateRequest>entry : map.entrySet()) {
+            UUID id = UUID.fromString(entry.getKey());
+            this.validateBrandSlug(entry.getValue().getSlug());
+            Brand brand = this.brandRepository.findById(id)
+                    .filter(br -> EntityStatus.ACTIVE.equals(br.getEntityStatus()))
+                    .orElseThrow(
+                            () -> new NotFoundException(MessageError.BRAND_NOT_FOUND.getMessage())
+                    );
+            this.brandMapper.toUpdate(brand, entry.getValue());
+            brand.setUpdatedAt(ZonedDateTime.now());
+            brand.setUpdatedBy("system");
+            brands.add(brand);
+        }
+
+        this.brandRepository.saveAll(brands);
+    }
+
+    @Override
+    @Transactional
+    public void deleteBulkBrand(List<String> brandIds) {
+        List<UUID> brandUUIDs = brandIds.stream().map(
+                UUID::fromString
+        ).toList();
+
+        List<Brand> brands = new ArrayList<>();
+
+        for (UUID brandUUID: brandUUIDs) {
+            Brand brand = this.brandRepository.findById(brandUUID)
+                    .orElseThrow(() -> new NotFoundException(
+                            MessageError.BRAND_NOT_FOUND.getMessage()
+                    ));
+            if (EntityStatus.INACTIVE.equals(brand.getEntityStatus()) || !brand.getProducts().isEmpty()) {
+                throw new UnprocessableEntityException(MessageError.BRAND_DELETE_FAILED.getMessage());
+            }
+
+            brand.setEntityStatus(EntityStatus.INACTIVE);
+            brand.setUpdatedAt(ZonedDateTime.now());
+            brand.setUpdatedBy(UUID.randomUUID().toString());
+            brand.setDeletedAt(ZonedDateTime.now());
+            brand.setDeletedBy(UUID.randomUUID().toString());
+            brands.add(brand);
+        }
+        this.brandRepository.saveAll(brands);
     }
 }
