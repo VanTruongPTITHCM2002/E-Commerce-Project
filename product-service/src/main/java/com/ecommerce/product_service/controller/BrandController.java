@@ -75,6 +75,12 @@ public class BrandController {
         return ResponseUtils.ok(MessageSuccess.BRAND_CREATED_SUCCESSFULLY.getMessage(), brandResponse);
     }
 
+    @PostMapping("/create-bulk")
+    public ResponseEntity<ApiResponse<Void>> createBulkBrand (@RequestBody @Valid List<BrandRequest> brandRequests) {
+        this.brandService.createBulkBrand(brandRequests);
+        return ResponseUtils.create(MessageSuccess.BRAND_CREATED_BULK_SUCCESSFULLY.getMessage(), null);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<BrandResponse>> updateBrand (@PathVariable("id") String id,
                                                                    @RequestBody @Valid BrandUpdateRequest brandUpdateRequest) {
@@ -82,9 +88,21 @@ public class BrandController {
         return  ResponseUtils.ok(MessageSuccess.BRAND_UPDATED_SUCCESSFULLY.getMessage(), brandResponse);
     }
 
+    @PutMapping("update-bulk")
+    public ResponseEntity<ApiResponse<Void>> updateBulkBrand (@RequestBody Map<String, BrandUpdateRequest> brandUpdateRequests) {
+        this.brandService.updateBulkBrand(brandUpdateRequests);
+        return ResponseUtils.ok(MessageSuccess.BRAND_UPDATED_BULK_SUCCESSFULLY.getMessage(), null);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteBrand (@PathVariable("id") String id) {
         this.brandService.deleteBrand(id);
         return ResponseUtils.ok(MessageSuccess.BRAND_DELETED_SUCCESSFULLY.getMessage(), null);
+    }
+
+    @DeleteMapping("delete-bulk")
+    public ResponseEntity<ApiResponse<Void>> deleteBulkBrand (@RequestBody List<String> ids) {
+        this.brandService.deleteBulkBrand(ids);
+        return ResponseUtils.ok(MessageSuccess.BRAND_DELETE_BULK_SUCCESSFULLY.getMessage(), null);
     }
 }
