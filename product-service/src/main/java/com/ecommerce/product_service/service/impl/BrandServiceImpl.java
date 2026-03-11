@@ -245,4 +245,23 @@ public class BrandServiceImpl implements BrandService {
         }
         this.brandRepository.saveAll(brands);
     }
+
+    @Override
+    @Transactional
+    public void changeStatus(String id, String status) {
+        UUID uuid = UUID.fromString(id);
+        Brand brand = this.brandRepository.findById(uuid)
+                .filter(br -> EntityStatus.ACTIVE.equals(br.getEntityStatus()))
+                .orElseThrow(
+                        () -> new NotFoundException(MessageError.BRAND_NOT_FOUND.getMessage())
+                );
+        if (!EntityStatus.INACTIVE.canTransitionTo(brand.getEntityStatus())) {
+            throw new UnprocessableEntityException(MessageError.STATUS_TRANSITION_ERROR.getMessage());
+        }
+        brand.setEntityStatus(EntityStatus.INACTIVE);
+        brand.setUpdatedAt(ZonedDateTime.now());
+        brand.setUpdatedBy("system");
+
+        this.brandRepository.save(brand);
+    }
 }
