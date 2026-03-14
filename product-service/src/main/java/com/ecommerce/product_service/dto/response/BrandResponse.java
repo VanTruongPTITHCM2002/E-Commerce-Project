@@ -1,5 +1,6 @@
 package com.ecommerce.product_service.dto.response;
 
+import com.ecommerce.product_service.enums.EntityStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
@@ -29,4 +30,5 @@ public class BrandResponse {
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     ZonedDateTime updatedAt;
     String updatedBy;
+    String status;
 }
