@@ -19,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,9 +38,10 @@ public class BrandController {
     public ResponseEntity<ApiResponse<PageResponse<BrandResponse>>> getBrandsPaginate (
             @Filter Specification<Brand> specification,
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
-            @RequestParam(value = "filter", defaultValue = "null") String filter
+            @RequestParam(value = "filter", defaultValue = "null") String filter,
+            @RequestParam(value = "isActive", defaultValue = "true") boolean isActive
     ) {
-            PageResponse<BrandResponse> responses = this.brandService.getBrands(specification, pageable, filter);
+            PageResponse<BrandResponse> responses = this.brandService.getBrands(specification, pageable, filter, isActive);
             return ResponseUtils.ok(MessageSuccess.BRAND_LIST_RETRIEVED.getMessage(), responses);
     }
 
@@ -92,6 +92,14 @@ public class BrandController {
     public ResponseEntity<ApiResponse<Void>> updateBulkBrand (@RequestBody Map<String, BrandUpdateRequest> brandUpdateRequests) {
         this.brandService.updateBulkBrand(brandUpdateRequests);
         return ResponseUtils.ok(MessageSuccess.BRAND_UPDATED_BULK_SUCCESSFULLY.getMessage(), null);
+    }
+
+    @PutMapping("/{id}/change-status")
+    public ResponseEntity<ApiResponse<Void>> changeStatus (@PathVariable("id") String id,
+                                                           @RequestParam String oldStatus,
+                                                           @RequestParam String newStatus) {
+        this.brandService.changeStatus(id, oldStatus, newStatus);
+        return ResponseUtils.ok(MessageSuccess.STATUS_TRANSITION_SUCCESSFULLY.getMessage(), null);
     }
 
     @DeleteMapping("/{id}")
