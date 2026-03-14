@@ -15,7 +15,7 @@ import java.util.UUID;
 public interface BrandService {
     BrandResponse createBrand (BrandRequest brandRequest);
     PageResponse<BrandResponse> getBrands (Specification<Brand> specification,
-                                           Pageable pageable, String filter);
+                                           Pageable pageable, String filter, boolean isActive);
     BrandResponse getBrandById (String id);
     Map<UUID, String> getSlugs (String slug);
     BrandResponse getByCodes (String code);
@@ -26,5 +26,5 @@ public interface BrandService {
     void createBulkBrand(List<BrandRequest> requestList);
     void updateBulkBrand(Map<String, BrandUpdateRequest> map);
     void deleteBulkBrand(List<String> brandIds);
-    void changeStatus (String id, String status);
+    void changeStatus (String id, String fromStatus, String toStatus);
 }
