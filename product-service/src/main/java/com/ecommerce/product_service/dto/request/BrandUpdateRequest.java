@@ -12,14 +12,8 @@ import lombok.experimental.FieldDefaults;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BrandUpdateRequest {
-    @NotEmpty(message = "Brand name must not be empty")
-    @NotBlank(message = "Brand name must not be blank")
-    @NotNull(message = "Brand name must not be null")
     @Size(max = 100, message = "Brand name must be at most 100 characters")
     String name;
-    @NotEmpty(message = "Brand slug must not be empty")
-    @NotNull(message = "Brand slug must not be null")
-    @NotBlank(message = "Brand slug must not be blank")
     @Size(max = 100, message = "Brand slug must be at most 100 characters")
     @Pattern(
             regexp = "^[a-z0-9]+(?:-[a-z0-9]+)*$",
