@@ -14,6 +14,7 @@ import com.ecommerce.product_service.exception.UnprocessableEntityException;
 import com.ecommerce.product_service.mapper.BrandMapper;
 import com.ecommerce.product_service.repository.BrandRepository;
 import com.ecommerce.product_service.service.BrandService;
+import com.ecommerce.product_service.utils.StatusUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -54,8 +55,10 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<BrandResponse> getBrands(Specification<Brand> specification, Pageable pageable, String filter) {
-        specification = specification.and((root, query, cb) -> root.get("entityStatus").in(EntityStatus.ACTIVE));
+    public PageResponse<BrandResponse> getBrands(Specification<Brand> specification, Pageable pageable, String filter, boolean isActive) {
+        specification = specification.and((root, query, cb) -> root.get("entityStatus").in(
+               isActive ? EntityStatus.ACTIVE : EntityStatus.INACTIVE)
+        );
         Page<Brand> brandPage = this.brandRepository.findAll(specification, pageable);
         Page<BrandResponse> brandResponses = brandPage.map(this.brandMapper::toResponse);
         return new PageResponse<>(brandResponses, "Brands", filter);
@@ -248,17 +251,20 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     @Transactional
-    public void changeStatus(String id, String status) {
+    public void changeStatus(String id, String fromStatus, String toStatus) {
         UUID uuid = UUID.fromString(id);
         Brand brand = this.brandRepository.findById(uuid)
-                .filter(br -> EntityStatus.ACTIVE.equals(br.getEntityStatus()))
                 .orElseThrow(
                         () -> new NotFoundException(MessageError.BRAND_NOT_FOUND.getMessage())
                 );
-        if (!EntityStatus.INACTIVE.canTransitionTo(brand.getEntityStatus())) {
+        if (!EntityStatus.valueOf(fromStatus.toUpperCase()).equals(brand.getEntityStatus())) {
+            throw new UnprocessableEntityException("Status not matched status present");
+        }
+
+        if (!StatusUtils.transitionStatus(fromStatus, toStatus)) {
             throw new UnprocessableEntityException(MessageError.STATUS_TRANSITION_ERROR.getMessage());
         }
-        brand.setEntityStatus(EntityStatus.INACTIVE);
+        brand.setEntityStatus(EntityStatus.valueOf(toStatus));
         brand.setUpdatedAt(ZonedDateTime.now());
         brand.setUpdatedBy("system");
 
