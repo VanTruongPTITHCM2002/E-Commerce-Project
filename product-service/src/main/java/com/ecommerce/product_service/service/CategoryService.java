@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CategoryService {
     CategoryResponse createCategory (CategoryRequest categoryRequest);
@@ -22,4 +23,7 @@ public interface CategoryService {
     void deleteCategory (String id);
     Category validateCategory (String categoryId);
     List<CategoryResponse> getRoot();
+    void createBulkCategory (List<CategoryRequest> categoryRequests);
+    void updateBulkCategory (Map<String, CategoryUpdateRequest> updateRequestMap);
+    void deleteBulkCategory (List<String> categoryIds);
 }
