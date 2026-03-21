@@ -23,6 +23,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/categories")
@@ -37,6 +38,12 @@ public class CategoryController {
     public ResponseEntity<ApiResponse<CategoryResponse>> createCategory (@RequestBody @Valid CategoryRequest categoryRequest) {
         CategoryResponse response = this.categoryService.createCategory(categoryRequest);
         return ResponseUtils.create(MessageSuccess.CATEGORY_CREATED_SUCCESSFULLY.getMessage(), response);
+    }
+
+    @PostMapping("/create-bulk")
+    public ResponseEntity<ApiResponse<Void>> createBulkCategory (@RequestBody @Valid List<CategoryRequest> categoryRequests) {
+        this.categoryService.createBulkCategory(categoryRequests);
+        return ResponseUtils.create(MessageSuccess.CATEGORY_CREATED_BULK_SUCCESSFULLY.getMessage(), null);
     }
 
     @GetMapping
@@ -83,10 +90,22 @@ public class CategoryController {
         return ResponseUtils.ok(MessageSuccess.CATEGORY_UPDATED_SUCCESSFULLY.getMessage(), response);
     }
 
+    @PutMapping("/update-bulk")
+    public ResponseEntity<ApiResponse<Void>> updateBulkCategory (@RequestBody Map<String,  CategoryUpdateRequest> updateRequestMap) {
+        this.categoryService.updateBulkCategory(updateRequestMap);
+        return ResponseUtils.ok(MessageSuccess.CATEGORY_UPDATED_BULK_SUCCESSFULLY.getMessage(), null);
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize(RoleConstants.ROLE_ADMIN)
     public ResponseEntity<ApiResponse<Void>> deleteCategory (@PathVariable("id") String id) {
         this.categoryService.deleteCategory(id);
         return ResponseUtils.ok(MessageSuccess.CATEGORY_DELETED_SUCCESSFULLY.getMessage(), null);
+    }
+
+    @DeleteMapping("/delete-bulk")
+    public ResponseEntity<ApiResponse<Void>> deleteBulkCategory (@RequestBody List<String> ids) {
+        this.categoryService.deleteBulkCategory(ids);
+        return ResponseUtils.ok(MessageSuccess.CATEGORY_DELETED_BULK_SUCCESSFULLY.getMessage(), null);
     }
 }
