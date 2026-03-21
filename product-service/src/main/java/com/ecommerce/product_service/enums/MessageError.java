@@ -10,6 +10,7 @@ public enum MessageError {
     PRODUCT_CREATION_FAILED("Failed to create product."),
     PRODUCT_UPDATE_FAILED("Failed to update product."),
     PRODUCT_DELETE_FAILED("Cannot delete product. Product not found."),
+    CATEGORY_NOT_FOUND("Category not found."),
     BRAND_DELETE_FAILED("Cannot delete brand."),
     BRAND_NOT_FOUND("Brand not found."),
     BRAND_CODE_EXISTED("Brand code already existed."),
