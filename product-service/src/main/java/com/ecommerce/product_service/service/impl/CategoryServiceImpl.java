@@ -27,10 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -55,11 +52,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional(readOnly = true)
     public CategoryDetailResponse getCategoryById(String id) {
-        Category category = this.categoryRepository.findById(UUID.fromString(id))
-                .filter(c -> EntityStatus.ACTIVE.equals(c.getEntityStatus()))
-                .orElseThrow(
-                        () -> new NotFoundException("Category not found")
-                );
+        Category category = this.validateCategory(id);
         CategoryDetailResponse categoryDetailResponse =  this.categoryMapper.toDetailResponse(category);
         if (!Objects.isNull(category.getParent())) {
             categoryDetailResponse.setParentId(category.getParent().getId());
@@ -76,29 +69,22 @@ public class CategoryServiceImpl implements CategoryService {
                             List.of(EntityStatus.ACTIVE)
                     )
                ));
+       specification = specification.and(((root, query, criteriaBuilder) -> criteriaBuilder.isNull(root.get("parent"))));
         Page<Category> categoryPage = this.categoryRepository.findAll(specification, pageable);
         Page<CategoryResponse> responses = categoryPage.map(this.categoryMapper::toResponse);
-        return new PageResponse<>(responses, "Categories", filter);
+        return new PageResponse<>(responses, "Categories paginate and filter", filter);
     }
 
     @Override
     @Transactional
     public CategoryResponse updateCategory(String id, CategoryUpdateRequest categoryUpdateRequest) {
-        Category category = this.categoryRepository.findById(UUID.fromString(id))
-                .filter(c -> EntityStatus.ACTIVE.equals(c.getEntityStatus()))
-                .orElseThrow(
-                        () -> new NotFoundException("Category not found")
-                );
+        Category category = this.validateCategory(id);
         if (!Objects.isNull(categoryUpdateRequest.getParentId())) {
             if (categoryUpdateRequest.getParentId().equals(id)) {
                 throw new ConflictException("Category cannot be parent of itself");
             }
 
-            Category parent =  this.categoryRepository.findById(UUID.fromString(categoryUpdateRequest.getParentId()))
-                    .filter(c -> EntityStatus.ACTIVE.equals(c.getEntityStatus()))
-                    .orElseThrow(
-                            () -> new NotFoundException("Category not found")
-                    );
+            Category parent =  this.validateCategory(categoryUpdateRequest.getParentId());
 
             if (isDescendant(category, parent)) {
                 throw new ConflictException("Cannot move category to its own subtree");
@@ -107,17 +93,14 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         this.categoryMapper.toUpdate(category, categoryUpdateRequest);
+        this.categoryRepository.save(category);
         return this.categoryMapper.toResponse(category);
     }
 
     @Override
     @Transactional(readOnly = true)
     public CategoryTreeResponse viewTreeCategory(String id) {
-        Category category = this.categoryRepository.findById(UUID.fromString(id))
-                .filter(c -> EntityStatus.ACTIVE.equals(c.getEntityStatus()))
-                .orElseThrow(
-                        () -> new NotFoundException("Category not found")
-                );
+        Category category = this.validateCategory(id);
         return this.categoryMapper.toViewTree(category);
     }
 
@@ -139,11 +122,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public void deleteCategory(String id) {
-        Category category = this.categoryRepository.findById(UUID.fromString(id))
-                .filter(c -> EntityStatus.ACTIVE.equals(c.getEntityStatus()))
-                .orElseThrow(
-                        () -> new NotFoundException("Category not found")
-                );
+        Category category = this.validateCategory(id);
         if (!category.getProducts().isEmpty()) {
             throw new ConflictException("Cannot delete category has products");
         }
@@ -185,10 +164,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private void checkParentAndReturn (Category category, String parentId) {
         if (StringUtils.hasText(parentId)) {
-            Category parent = this.categoryRepository.findById(UUID.fromString(parentId))
-                    .orElseThrow(
-                            () -> new ConflictException("Category not found")
-                    );
+            Category parent = this.validateCategory(parentId);
             category.setParent(parent);
         }
     }
@@ -212,7 +188,7 @@ public class CategoryServiceImpl implements CategoryService {
         return this.categoryRepository.findById(
                 UUID.fromString(categoryId)
         ).orElseThrow(
-                () -> new NotFoundException("Category not found")
+                () -> new NotFoundException(MessageError.CATEGORY_NOT_FOUND.getMessage())
         );
     }
 
@@ -234,5 +210,69 @@ public class CategoryServiceImpl implements CategoryService {
                         .name(category.getName())
                         .build()
         ).toList();
+    }
+
+    @Override
+    @Transactional
+    public void createBulkCategory(List<CategoryRequest> categoryRequests) {
+        List<Category> categories = new ArrayList<>();
+        for (CategoryRequest categoryRequest: categoryRequests) {
+            this.validateCategorySlug(categoryRequest.getSlug());
+            Category category = this.categoryMapper.toEntity(categoryRequest);
+            this.checkParentAndReturn(category, categoryRequest.getParentId());
+            this.checkChildrenAndReturn(category, categoryRequest.getChildren());
+            categories.add(category);
+        }
+        this.categoryRepository.saveAll(categories);
+    }
+
+    @Override
+    @Transactional
+    public void updateBulkCategory(Map<String, CategoryUpdateRequest> updateRequestMap) {
+        List<Category> categories = new ArrayList<>();
+        for (Map.Entry<String, CategoryUpdateRequest> entry: updateRequestMap.entrySet()) {
+            Category category = this.validateCategory(entry.getKey());
+            if (!Objects.isNull(entry.getValue().getParentId())) {
+                if (entry.getValue().getParentId().equals(entry.getKey())) {
+                    throw new ConflictException("Category cannot be parent of itself");
+                }
+
+                Category parent =  this.validateCategory(entry.getValue().getParentId());
+
+                if (isDescendant(category, parent)) {
+                    throw new ConflictException("Cannot move category to its own subtree");
+                }
+                category.setParent(parent);
+            }
+
+            this.categoryMapper.toUpdate(category, entry.getValue());
+            categories.add(category);
+        }
+        this.categoryRepository.saveAll(categories);
+    }
+
+    @Override
+    @Transactional
+    public void deleteBulkCategory(List<String> categoryIds) {
+        List<UUID> categoryUUIDs = categoryIds.stream().map(UUID::fromString).toList();
+        List<Category> categories = new ArrayList<>();
+        for (UUID categoryUUID: categoryUUIDs) {
+            Category category = this.validateCategory(categoryUUID.toString());
+            if (!category.getProducts().isEmpty()) {
+                throw new ConflictException("Cannot delete category has products");
+            }
+
+            if (!category.getChildren().isEmpty()) {
+                throw  new ConflictException("Cannot delete category with children");
+            }
+
+            category.setEntityStatus(EntityStatus.INACTIVE);
+            category.setDeletedAt(ZonedDateTime.now());
+            category.setDeletedBy(UUID.randomUUID().toString());
+            categories.add(category);
+        }
+
+        this.categoryRepository.saveAll(categories);
+
     }
 }
