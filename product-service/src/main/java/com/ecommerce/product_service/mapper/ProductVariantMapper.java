@@ -5,12 +5,10 @@ import com.ecommerce.product_service.dto.request.ProductVariantUpdateRequest;
 import com.ecommerce.product_service.dto.response.ProductVariantResponse;
 import com.ecommerce.product_service.entity.ProductVariant;
 import com.ecommerce.product_service.utils.JsonbUtils;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.Mappings;
+import org.mapstruct.*;
 
-@Mapper(componentModel = "spring", imports = JsonbUtils.class)
+@Mapper(componentModel = "spring", imports = JsonbUtils.class,
+ nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface ProductVariantMapper {
     @Mapping(target = "attributes",expression = "java(JsonbUtils.toJsonString(productVariantRequest.getAttributes()))")
     ProductVariant toEntity (ProductVariantRequest productVariantRequest);
