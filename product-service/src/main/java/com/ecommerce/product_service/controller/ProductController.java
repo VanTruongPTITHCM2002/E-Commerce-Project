@@ -50,7 +50,7 @@ public class ProductController {
     ProductService productService;
 
     @GetMapping("/admin")
-    @PreAuthorize(RoleConstants.ROLE_ADMIN)
+//    @PreAuthorize(RoleConstants.ROLE_ADMIN)
     public ResponseEntity<ApiResponse<PageResponse<ProductAdminResponse>>>getProducts(
             @Filter Specification<Product> specification,
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
@@ -71,7 +71,7 @@ public class ProductController {
     }
 
     @GetMapping("/admin/{productId}")
-    @PreAuthorize(RoleConstants.ROLE_ADMIN)
+//    @PreAuthorize(RoleConstants.ROLE_ADMIN)
     public ResponseEntity<ApiResponse<ProductAdminResponse>> getProductById(@PathVariable("productId") String productId){
         ProductAdminResponse productResponse = this.productService.getProductById(productId);
         return ResponseUtils.ok(MessageSuccess.PRODUCT_RETRIEVED_SUCCESSFULLY.getMessage(), productResponse);
@@ -93,7 +93,7 @@ public class ProductController {
     }
 
     @PostMapping("/admin")
-    @PreAuthorize(RoleConstants.ROLE_ADMIN)
+//    @PreAuthorize(RoleConstants.ROLE_ADMIN)
     @Operation(summary = "Create a new product", description = "Add a new product to the system")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Product created successfully",
@@ -105,28 +105,28 @@ public class ProductController {
     }
 
     @PostMapping("/admin/create-bulk")
-    @PreAuthorize(RoleConstants.ROLE_ADMIN)
+//    @PreAuthorize(RoleConstants.ROLE_ADMIN)
     public ResponseEntity<ApiResponse<ProductAdminResponse>> createProductBulk(@RequestBody @Valid List<ProductRequest> productRequest){
         this.productService.createProductBulk(productRequest);
         return ResponseUtils.create(MessageSuccess.PRODUCT_CREATED_BULK_SUCCESSFULLY.getMessage(), null);
     }
 
     @PutMapping("/admin/{productId}")
-    @PreAuthorize(RoleConstants.ROLE_ADMIN)
+//    @PreAuthorize(RoleConstants.ROLE_ADMIN)
     public  ResponseEntity<ApiResponse<ProductAdminResponse>> updateProduct (@PathVariable("productId") String productId, @RequestBody @Valid ProductUpdateRequest productUpdateRequest){
         ProductAdminResponse response = this.productService.updateProduct(productId, productUpdateRequest);
         return ResponseUtils.ok(MessageSuccess.PRODUCT_UPDATED_SUCCESSFULLY.getMessage(), response);
     }
 
     @PutMapping("/admin/update-bulk")
-    @PreAuthorize(RoleConstants.ROLE_ADMIN)
+//    @PreAuthorize(RoleConstants.ROLE_ADMIN)
     public ResponseEntity<ApiResponse<Void>> updateProductBulk(@RequestBody Map<String, ProductUpdateRequest> updateRequestMap){
         this.productService.updateProductBulk(updateRequestMap);
         return ResponseUtils.ok(MessageSuccess.PRODUCT_UPDATED_SUCCESSFULLY.getMessage(), null);
     }
 
     @PutMapping("/{productId}")
-    @PreAuthorize(RoleConstants.ROLE_ADMIN)
+//    @PreAuthorize(RoleConstants.ROLE_ADMIN)
     public ResponseEntity<ApiResponse<Boolean>> updateProductFromCart(@PathVariable String productId,
                                                                       @RequestParam int quantity, @RequestParam boolean isAdd){
         Boolean isSuccess = this.productService.updateProductFromCart(productId, quantity, isAdd);
@@ -134,7 +134,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/admin/{productId}")
-    @PreAuthorize(RoleConstants.ROLE_ADMIN)
+//    @PreAuthorize(RoleConstants.ROLE_ADMIN)
     public  ResponseEntity<ApiResponse<Map<String,Boolean>>> deleteProduct (@PathVariable String productId){
         boolean isDeletedProduct = this.productService.deleteProduct(productId);
         Map<String,Boolean> map = new HashMap<>();
@@ -143,7 +143,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/admin/delete-bulk")
-    @PreAuthorize(RoleConstants.ROLE_ADMIN)
+//    @PreAuthorize(RoleConstants.ROLE_ADMIN)
     public ResponseEntity<ApiResponse<Void>> deleteProductBulk(@RequestBody List<String>productIds){
         this.productService.deleteProductBulk(productIds);
         return ResponseUtils.ok(MessageSuccess.PRODUCT_DELETED_BULK_SUCCESSFULLY.getMessage(), null);
