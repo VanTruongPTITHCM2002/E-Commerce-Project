@@ -1,25 +1,17 @@
 package com.ecommerce.product_service.enums;
 
 public enum EntityStatus {
-    ACTIVE {
-        @Override
-        public boolean canTransitionTo(EntityStatus entityStatus) {
-            return entityStatus == INACTIVE || entityStatus == DELETED;
-        }
-    },
-    INACTIVE {
-        @Override
-        public boolean canTransitionTo(EntityStatus entityStatus) {
-            return entityStatus == ACTIVE || entityStatus == DELETED;
-        }
-    },
-//    OUT_OF_STOCK,
+    ACTIVE,
+    INACTIVE,
+    //    OUT_OF_STOCK,
 //    DRAFT,
-    DELETED {
-    @Override
+    DELETED;
+
     public boolean canTransitionTo(EntityStatus entityStatus) {
-        return entityStatus == INACTIVE;
+        return switch (this) {
+            case ACTIVE -> entityStatus == INACTIVE || entityStatus == DELETED;
+            case INACTIVE -> entityStatus == ACTIVE || entityStatus == DELETED;
+            case DELETED -> entityStatus == INACTIVE;
+        };
     }
-};
-    public abstract boolean canTransitionTo(EntityStatus entityStatus);
 }
