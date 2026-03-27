@@ -34,6 +34,7 @@ public abstract class BaseEntity {
     @Column(name = "deleted_by")
     String deletedBy;
 
+    @Enumerated(EnumType.STRING)
     EntityStatus entityStatus;
 
     @Version
