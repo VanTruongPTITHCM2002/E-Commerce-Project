@@ -4,6 +4,7 @@ import com.ecommerce.product_service.dto.response.ApiResponse;
 import com.ecommerce.product_service.dto.response.FieldErrorResponse;
 import com.ecommerce.product_service.enums.MessageError;
 import com.ecommerce.product_service.utils.ResponseUtils;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -105,5 +106,8 @@ public class GlobalExceptionHandler {
         return ResponseUtils.unknown(HttpStatus.CONFLICT.value(), conflictException.getMessage());
     }
 
-
+    @ExceptionHandler(InvalidDataAccessApiUsageException.class)
+    public ResponseEntity<ApiResponse<String>> handleInvalidDataAccessApiUsageException (InvalidDataAccessApiUsageException invalidDataAccessApiUsageException) {
+        return ResponseUtils.badRequest(invalidDataAccessApiUsageException.getMessage());
+    }
 }
