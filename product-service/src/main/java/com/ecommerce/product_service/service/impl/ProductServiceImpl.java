@@ -20,6 +20,9 @@ import com.ecommerce.product_service.repository.ProductRepository;
 import com.ecommerce.product_service.service.BrandService;
 import com.ecommerce.product_service.service.CategoryService;
 import com.ecommerce.product_service.service.ProductService;
+import com.google.common.base.Preconditions;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -50,6 +53,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Cacheable("products")
+    @CircuitBreaker(name = "productService", fallbackMethod = "fallBackGetProduct")
+    @RateLimiter(name = "productService", fallbackMethod = "fallBackGetProductAdmin")
     @Transactional(readOnly = true)
     public PageResponse<ProductAdminResponse> getAdminProducts(Specification<Product> specification, Pageable pageable, String filter) {
         try {
@@ -61,6 +66,14 @@ public class ProductServiceImpl implements ProductService {
         } finally {
             log.info("End get products for admin");
         }
+    }
+
+    public String fallBackGetProduct() {
+        return "Products for admin failed";
+    }
+
+    public String fallBackGetProductAdmin() {
+        return "Too many request. Please try again later";
     }
 
     @Override
@@ -119,7 +132,7 @@ public class ProductServiceImpl implements ProductService {
         try {
             specification = specification.and(
                     (root, query, cb)
-                    -> root.get("entityStatus").in(EntityStatus.ACTIVE));
+                    -> cb.equal(root.get("entityStatus"),EntityStatus.ACTIVE));
             Page<Product> productPage = this.productRepository.findAll(specification, pageable);
             Page<ProductResponse> productResponses = productPage.map(
                     this.productMapper::toProductResponse);
